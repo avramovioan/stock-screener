@@ -1,51 +1,51 @@
-name: Deploy web
+# name: Deploy web
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - "apps/web/**"
-      - "supabase/functions/_shared/core/**"
-      - "bun.lock"
-      - ".github/workflows/deploy-web.yml"
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: [master]
+#     paths:
+#       - "apps/web/**"
+#       - "supabase/functions/_shared/core/**"
+#       - "bun.lock"
+#       - ".github/workflows/deploy-web.yml"
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
-concurrency:
-  group: deploy-web
-  cancel-in-progress: false
+# concurrency:
+#   group: deploy-web
+#   cancel-in-progress: false
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      # public build-time values only, stored as repository VARIABLES (not secrets)
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-      VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
-      VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-      - run: bun install --frozen-lockfile
-      - name: Guard production build variables
-        run: bun run tools/check-web-env.ts
-      - run: bun run build
-      - name: Scan the built bundle for secrets
-        run: bun run check:bundle
-      - name: Deploy to Cloudflare Workers Static Assets
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/web
-          wranglerVersion: "4.151.0"
-          command: deploy
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 15
+#     env:
+#       # public build-time values only, stored as repository VARIABLES (not secrets)
+#       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+#       VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+#       VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+#       VITE_VAPID_PUBLIC_KEY: ${{ vars.VITE_VAPID_PUBLIC_KEY }}
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version-file: .node-version
+#       - uses: oven-sh/setup-bun@v2
+#         with:
+#           bun-version: 1.3.14
+#       - run: bun install --frozen-lockfile
+#       - name: Guard production build variables
+#         run: bun run tools/check-web-env.ts
+#       - run: bun run build
+#       - name: Scan the built bundle for secrets
+#         run: bun run check:bundle
+#       - name: Deploy to Cloudflare Workers Static Assets
+#         uses: cloudflare/wrangler-action@v3
+#         with:
+#           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+#           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+#           workingDirectory: apps/web
+#           wranglerVersion: "4.151.0"
+#           command: deploy

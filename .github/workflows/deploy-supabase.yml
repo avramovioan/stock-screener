@@ -1,59 +1,59 @@
-name: Deploy Supabase
+# name: Deploy Supabase
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [master]
-    paths:
-      - "supabase/**"
-      - ".github/workflows/deploy-supabase.yml"
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches: [master]
+#     paths:
+#       - "supabase/**"
+#       - ".github/workflows/deploy-supabase.yml"
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
-concurrency:
-  group: deploy-supabase
-  cancel-in-progress: false
+# concurrency:
+#   group: deploy-supabase
+#   cancel-in-progress: false
 
-env:
-  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-  SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-  SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+# env:
+#   SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+#   SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+#   SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
 
-jobs:
-  database:
-    name: Migrations (manual approval)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # Configure required reviewers on the "production" environment: that is the approval gate.
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 2.121.0
-      - run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
-      - name: Preview pending migrations
-        run: supabase db push --dry-run --skip-vault
-      - name: Apply migrations
-        run: supabase db push --yes --skip-vault
+# jobs:
+#   database:
+#     name: Migrations (manual approval)
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 15
+#     # Configure required reviewers on the "production" environment: that is the approval gate.
+#     environment: production
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: supabase/setup-cli@v1
+#         with:
+#           version: 2.121.0
+#       - run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --yes
+#       - name: Preview pending migrations
+#         run: supabase db push --dry-run --skip-vault
+#       - name: Apply migrations
+#         run: supabase db push --yes --skip-vault
 
-  functions:
-    name: Edge Functions
-    needs: database
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-      - name: Every function has verify_jwt = false and the canonical import map
-        run: bun run check:functions-config
-      - uses: supabase/setup-cli@v1
-        with:
-          version: 2.121.0
-      # Function secrets are set once by the operator (`supabase secrets set`), never by CI.
-      # All functions authenticate in code, so the platform JWT check is off for every one
-      # (the same value as the [functions.*] blocks that check:functions-config enforces).
-      - run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --no-verify-jwt
+#   functions:
+#     name: Edge Functions
+#     needs: database
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 15
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: oven-sh/setup-bun@v2
+#         with:
+#           bun-version: 1.3.14
+#       - name: Every function has verify_jwt = false and the canonical import map
+#         run: bun run check:functions-config
+#       - uses: supabase/setup-cli@v1
+#         with:
+#           version: 2.121.0
+#       # Function secrets are set once by the operator (`supabase secrets set`), never by CI.
+#       # All functions authenticate in code, so the platform JWT check is off for every one
+#       # (the same value as the [functions.*] blocks that check:functions-config enforces).
+#       - run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF" --no-verify-jwt
