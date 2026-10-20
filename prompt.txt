@@ -1,0 +1,1978 @@
+# Production Engineering Brief: Stock Screening, Fundamental Risk Analysis, Portfolio Analytics, and Interactive Brokers Integration
+
+## 1. Mission
+
+Act as a senior full-stack engineer, quantitative developer, financial-data engineer, security architect, and technical product owner.
+
+Build a production-ready, responsive web application for long-term investors. It should identify companies trading significantly below or above a long-term regression channel, investigate business and financial risks using current evidence, monitor a user's portfolio, and enable carefully controlled order placement through Interactive Brokers (IBKR).
+
+The application must include:
+
+1. A daily stock screening engine that reproduces the supplied TradingView Pine Script.
+2. A dynamic company universe based on market capitalization and a configurable Worldwide/US-only selection.
+3. AI-assisted fundamental analysis for discounted companies and selected portfolio holdings.
+4. A public Overview dashboard and interactive Quotes page.
+5. Supabase authentication, secure IBKR account linking, portfolio monitoring, and analytics.
+6. Limit-order preparation, submission, modification, and execution tracking.
+7. Backend-generated Web Push and optional email notifications through Resend.
+
+**Priorities, in order:** financial correctness, security, data reliability, reproducibility, operational reliability, maintainability, then visual polish.
+
+Do not build a superficial UI with mocked behavior and call it production-ready.
+
+The attached `stddevchn.pine` file is authoritative for the indicator. Read it before implementing indicator calculations. If the file is unavailable, explicitly identify that blocker and continue with unrelated work rather than inventing the implementation.
+
+## 2. Non-negotiable engineering rules
+
+- Inspect the existing repository before making changes.
+- Preserve existing working code and conventions unless there is a demonstrable reason to change them.
+- Use TypeScript, React, and Supabase.
+- Use Supabase Edge Functions and Supabase Cron for backend processing, without introducing a permanently running custom backend by default.
+- Use Bun where the existing repository uses Bun.
+- Prefer free services when they are technically suitable and legally permitted for the intended production use.
+- Do not commit secrets or expose them in browser bundles.
+- Never fabricate market prices, company rankings, AI research findings, exchange mappings, commissions, or execution states.
+- Do not claim an integration is live until it has been tested against the appropriate external system.
+- Do not silently substitute mocks for production integrations.
+- Never place a live order during development or automated testing.
+- Do not submit or modify an order without explicit user confirmation.
+- Do not let an AI-generated opinion directly initiate a trade.
+- Do not silently change a financial calculation or business rule.
+- If a requested integration cannot work under the selected architecture, document why and propose the smallest viable alternative. Obtain approval before introducing a paid service or additional infrastructure outside the agreed architecture.
+- Use authoritative and up-to-date third-party documentation.
+- Cite external technical claims in your engineering notes and document the versions and constraints that informed your decisions.
+
+## 3. Mandatory discovery and feasibility gate
+
+Before making architecture decisions or committing to external integrations, inspect the repository and verify the current capabilities of the required services.
+
+### 3.1 Repository audit
+
+Inspect:
+
+- Project structure and package manifests.
+- Existing React/TypeScript framework and build setup.
+- Existing authentication and route protection.
+- Supabase schemas, migrations, RLS policies, Edge Functions, and Cron jobs.
+- Environment variables and secret-management practices.
+- Existing hosting and domain configuration.
+- Existing charts, notifications, data providers, and test infrastructure.
+- Development and production environment separation.
+- CI/CD, deployment, monitoring, and rollback conventions.
+
+Preserve functional existing infrastructure. Do not start a fresh application if the current repository can reasonably be extended.
+
+### 3.2 Mandatory integration research
+
+Verify the current documentation and restrictions for:
+
+- Yahoo Finance and feasible alternatives.
+- Supabase Edge Functions, Cron, runtime limits, and job scheduling.
+- IBKR's supported authentication, portfolio, market-data, and trading interfaces.
+- IBKR contract discovery and exchange/destination selection.
+- Web Push on desktop and iOS Home Screen web apps.
+- Resend transactional email.
+- Supabase Auth and Google SSO.
+- Chart-library licensing and commercial-use terms.
+- AI research, source retrieval, and web-search capabilities.
+
+For each integration, establish:
+
+- Whether it supports the required use case.
+- Whether production and commercial use are allowed.
+- Authentication and account requirements.
+- Rate limits and runtime limitations.
+- Expected costs and available free tiers.
+- Required user or administrator setup.
+- Data freshness and redistribution restrictions.
+- Failure and recovery behavior.
+- Whether the integration is feasible within Supabase Edge Functions.
+
+Do not presume that a free endpoint is permitted for a public website.
+
+### 3.3 Yahoo Finance decision
+
+Yahoo Finance is the first candidate because free access is preferred.
+
+However, do not use an unofficial endpoint or the `yfinance` library in production without verifying that the specific access method and intended display/use are permitted.
+
+If Yahoo cannot provide a legally and technically suitable solution, recommend the least expensive suitable alternative.
+
+Keep market-data access behind a TypeScript provider interface so the implementation can change providers without rewriting financial calculations.
+
+The user has explicitly approved this approach.
+
+### 3.4 Critical IBKR feasibility gate
+
+Determine whether the user's intended hosted web application can obtain legitimate, supported access to IBKR account information, live or delayed account-specific quotes, and order placement.
+
+Specifically investigate:
+
+- The retail/individual Client Portal Gateway workflow.
+- Current supported Web API authentication methods.
+- OAuth options, their availability, and any third-party vendor approval requirements.
+- Session lifetime, renewal, and required user interaction.
+- Whether streaming quotes and execution updates are available to this application.
+- Account type and trading-permission requirements.
+- Market-data subscription requirements.
+
+Do not assume a Supabase Edge Function can maintain a persistent brokerage session or WebSocket indefinitely.
+
+Do not collect and store a reusable IBKR username/password as a shortcut.
+
+If an approved hosted authorization mechanism is unavailable to the application, clearly identify the blocker. Continue implementing independent features, mocks, and safe integration interfaces, but do not present broker linking or real order placement as production-ready until a permitted solution is established.
+
+### 3.5 Discovery deliverables
+
+Produce:
+
+1. Repository audit.
+2. Architecture diagram or equivalent architecture description.
+3. Database and data-flow design.
+4. External integration feasibility matrix.
+5. Market-data and licensing decision.
+6. IBKR feasibility conclusion.
+7. Security and privacy assessment.
+8. Implementation phases and acceptance tests.
+
+Do not stop after writing the plan. Begin implementation as soon as the feasible parts are sufficiently understood.
+
+---
+
+# PART I — COMPANY UNIVERSE AND RANKING
+
+## 4. Market universe
+
+### 4.1 Market coverage
+
+Support two universe modes:
+
+- Worldwide.
+- US only.
+
+Default: Worldwide.
+
+Users must be able to change the displayed universe without causing a visitor's selection to unpredictably change shared backend state.
+
+If both modes can be supported with the selected data source, calculate and store ranking/signal data separately for each mode. The Overview selector should then display the corresponding results.
+
+Use an explicitly configured default mode for notification generation. Do not send duplicate notifications for the same company merely because it appears in more than one universe.
+
+If calculating and storing both universes is not feasible, document the limitation and use a deterministic, controlled application-level setting rather than allowing anonymous visitors to change a global setting.
+
+### 4.2 Eligibility
+
+A company qualifies for the main screening universe if:
+
+- It is an eligible publicly traded operating company.
+- Its market capitalization is at least $50 billion USD-equivalent.
+- The underlying primary listing has existed for at least 10 calendar years.
+- At least 2,500 valid completed daily bars are available for the indicator.
+- Its security identity, primary listing, and historical data can be established reliably.
+- Its current applicable lower deviation line is above zero.
+- Its current Standard Deviation Channel meets the upward-trend rule defined in Part II.
+
+Exclude ETFs, mutual funds, indices, and other non-operating-company instruments from the company universe. A user's portfolio may still contain these instruments.
+
+Do not automatically assume that a predecessor's historical data proves the current company or security has existed for 10 years. Handle mergers, spin-offs, ticker changes, corporate reorganizations, and new share classes according to documented identity-continuity rules.
+
+### 4.3 Market capitalization
+
+Use a USD-equivalent $50 billion threshold for all eligible companies.
+
+For non-US companies, use a documented foreign-exchange conversion method and timestamp. Do not compare market capitalizations in different currencies without conversion.
+
+Store the original market-cap value and currency alongside the converted USD-equivalent value.
+
+Use a consistent market-cap source and a documented policy for missing or stale values.
+
+### 4.4 Company-level ranking
+
+Rank companies by descending market capitalization within the applicable universe.
+
+Avoid duplicate entries for the same company because of ADRs, multiple exchanges, different ticker symbols, or multiple share classes.
+
+Use the primary listing as the canonical screening security. Store stable company/security identifiers separately from tickers.
+
+The ranking must be recalculated for each daily scan.
+
+The rules for discounts are:
+
+- Ranks #1–#10: use the -3 lower deviation line.
+- Ranks #11 and lower: use the -4 lower deviation line.
+
+A company may have a market capitalization above $50B but be ranked below #50. This is different from having a market capitalization below $50B.
+
+The application must distinguish these states.
+
+### 4.5 Ranking profiles
+
+Record the universe mode, rank, and ranking timestamp used to make every decision.
+
+If a company changes rank during the day, do not retroactively rewrite the rank associated with an earlier alert or report.
+
+If switching between Worldwide and US-only changes the company's rank and therefore its applicable discount threshold, calculate the ranking and signal separately for each universe profile.
+
+---
+
+# PART II — STANDARD DEVIATION CHANNEL
+
+## 5. Source of truth: the supplied Pine Script
+
+Read the exact contents of `stddevchn.pine`.
+
+The supplied code is a Pine Script v5 indicator named `Standard Deviation Channel`. Implement its actual mathematical behavior—not a generic regression channel, Bollinger Bands, ATR bands, or an approximate lookalike.
+
+The application should reproduce the indicator closely enough to validate its calculated values against TradingView when the same instrument, timeframe, historical prices, and settings are used.
+
+### 5.1 Default configuration
+
+Use the following defaults:
+
+| Input | Default |
+|---|---|
+| Length | 2500 |
+| Source | Close |
+| Upper Deviation +1 multiplier | 1 |
+| Upper Deviation +2 multiplier | 2 |
+| Lower Deviation -1 magnitude | 3 |
+| Lower Deviation -2 magnitude | 4 |
+| Timeframe | Daily |
+| Channel extension | Right |
+| Pearson's R display | Off |
+
+The lower deviation inputs should be stored as positive magnitudes of 3 and 4, then applied with the negative sign as in the source Pine Script. This generates -3 and -4 standard-deviation levels.
+
+Make the input values configurable. Validate values and prevent settings from silently changing during updates.
+
+The chart timeframe must remain daily. The user may adjust the historical chart range, but must not inadvertently change the indicator to an intraday calculation.
+
+### 5.2 Preserve the original Pine input semantics
+
+The Pine Script contains Boolean inputs for the four deviation lines. These are **mode selectors**, not visibility toggles:
+
+- When enabled, the line uses its configured standard-deviation multiplier.
+- When disabled, the script uses the corresponding maximum historical high/low deviation instead.
+
+The line is still plotted in the second mode.
+
+Preserve this behavior if the original inputs are exposed in the application. If clearer labels are needed, explain the two modes explicitly.
+
+If separate show/hide controls are implemented, keep them independent from the Pine mode selectors.
+
+Do not reinterpret an unchecked source input as "hide this line."
+
+### 5.3 Exact calculations
+
+Preserve the source implementation's:
+
+- Regression slope, average, and intercept calculations.
+- Historical index orientation.
+- Start and end price calculations.
+- Standard-deviation accumulation and normalization.
+- Residual calculation against the regression line.
+- High/low maximum-deviation alternatives.
+- Upper and lower deviation multipliers.
+- Line start/end coordinates.
+- Channel endpoint calculations.
+- Right-extension behavior.
+- Any other visual behavior that affects equivalence.
+
+In particular, the source's deviation calculation divides the accumulated squared regression residuals by `length - 1` before taking the square root. Do not substitute a generic standard-deviation helper unless equivalence is demonstrated.
+
+Do not silently "correct" peculiarities in the supplied source, including line placement or duplicated calculations, if they change the output.
+
+Create test fixtures and compare exact calculated levels, not merely chart appearance.
+
+### 5.4 Indicator window and recalculation
+
+A length of 2,500 represents 2,500 daily bars, not exactly 10 calendar years. The resulting span is approximately ten years of trading sessions, subject to market holidays, data gaps, and exchange calendars.
+
+The source Pine Script calculates its regression channel from the latest window on the last chart bar, then draws the resulting channel over that window and extends it to the right.
+
+Preserve this behavior.
+
+Do not accidentally implement the indicator as a rolling historical series of separate 2,500-bar channels for every prior candle unless a different historical-analysis mode is explicitly introduced as a separate feature.
+
+At each successful daily scan, recalculate the current channel using the latest completed daily candle and the latest 2,500 valid daily bars.
+
+The chart should initially display approximately ten calendar years of historical data, with a small amount of forward space so the final candle does not sit at the very edge.
+
+### 5.5 Price adjustment
+
+Default to split-adjusted historical prices without dividend adjustment, subject to verification against TradingView's ordinary chart presentation.
+
+Use the same adjustment policy for the screening engine and chart.
+
+Investigate the chosen data provider's adjustment behavior and compare sample prices with TradingView before declaring parity.
+
+Do not silently combine raw close, split-adjusted close, and total-return-adjusted close in the same channel.
+
+The configured source is `Close`. Its precise relationship to the provider's corporate-action-adjusted candles must be documented.
+
+If exact parity is not achievable because the provider supplies different prices, document the discrepancy instead of pretending that the calculation is identical.
+
+### 5.6 Uptrend rule
+
+A security is eligible only if the channel is strictly rising from left to right over the current window.
+
+Flat and downward-sloping channels are excluded.
+
+The supplied Pine Script indexes historical observations in the reverse direction of chart display. Therefore, the sign of its internal raw slope must not be interpreted naively.
+
+Determine the trend using the actual calculated visual line endpoints. A strictly rising channel has a greater right-hand endpoint than left-hand endpoint.
+
+Validate this rule using increasing, decreasing, and constant synthetic price series.
+
+Do not add a separate centerline-versus-current-price filter. The user's requested trend condition is channel direction.
+
+### 5.7 Zero-level filter
+
+For the applicable discount threshold, exclude the signal if the lower deviation line is at or below zero.
+
+This is a test of the calculated lower channel line, not a test of whether the actual stock price is positive.
+
+Perform this check in the original listing's price currency. Do not use the European equivalent's price or a currency conversion to determine the signal.
+
+### 5.8 TradingView parity test
+
+Build a repeatable validation suite using representative securities and fixed historical dates.
+
+Compare:
+
+- Input settings.
+- Historical daily source values.
+- Regression line start and endpoint.
+- All four deviation lines.
+- Channel direction.
+- Latest completed close.
+- Threshold classifications.
+
+Use the same symbol, exchange, timeframe, historical bars, adjustment mode, and settings.
+
+Specify a numerical tolerance, explain its rationale, and identify any difference caused by the external data source rather than the algorithm.
+
+---
+
+# PART III — DAILY SCREENING AND SIGNAL STATE
+
+## 6. Daily scan schedule
+
+Use Supabase Cron to initiate the screening workflow at **10:00 Europe/Sofia time every calendar day**.
+
+Account explicitly for daylight-saving transitions.
+
+Verify whether the deployed scheduling mechanism supports the required timezone configuration. If it does not, use a deterministic UTC trigger strategy with an explicit local-time check and idempotency guard. Do not hardcode one UTC hour and assume it always represents 10:00 Sofia time.
+
+The scan must use the latest completed daily candle available for each exchange. It must not treat an incomplete intraday candle as the official daily close.
+
+On weekends, exchange holidays, or other non-trading days, reuse the last completed valid trading-session candle for screening purposes while preserving its actual session date and data freshness.
+
+Do not create duplicate signals because a scan runs again without new market data.
+
+### 6.1 Pipeline stages
+
+Implement the daily workflow as a durable, resumable pipeline:
+
+1. Refresh or validate the company/security universe.
+2. Retrieve and validate market capitalization and FX data.
+3. Establish canonical primary listings and rankings.
+4. Retrieve and validate daily price history.
+5. Calculate the current Standard Deviation Channel.
+6. Apply the eligibility rules.
+7. Generate discount candidates and portfolio premium/risk candidates.
+8. Retrieve current company news and relevant financial disclosures.
+9. Run or refresh the necessary fundamental research.
+10. Produce the operational classifications.
+11. Persist scan results and state transitions.
+12. Create deduplicated notification digests.
+13. Dispatch to opted-in channels.
+14. Record execution status, coverage, failures, and diagnostics.
+
+Do not implement a monolithic Edge Function that attempts to process the entire universe and all AI reports in one execution.
+
+Use bounded batches, durable checkpoints, idempotent processing, and safe retries. Use an appropriate Supabase-native queue or database-backed job table if needed.
+
+Respect Edge Function runtime, database, provider, and AI-service limits.
+
+### 6.2 Scan completion and stale status
+
+The dashboard must display the latest successful data-fetch/scan timestamp in Europe/Sofia time.
+
+Distinguish:
+
+- Last attempted scan.
+- Last successful scan.
+- Latest completed trading-session date represented by the data.
+
+If the scan fails or is incomplete, do not claim that fresh results are available.
+
+Report coverage, failed instruments, missing historical data, research failures, and stale data.
+
+Define whether a partial scan can publish results. Never mark unprocessed instruments as clean or passing merely because processing failed.
+
+### 6.3 Idempotency
+
+The pipeline must be safe to rerun after failures and deployments.
+
+Use unique scan identifiers and idempotency keys. A repeated execution must not create duplicate signal episodes, orders, reports, or notifications.
+
+Notification creation and delivery must be separate states, allowing delivery retries without generating another logical alert.
+
+---
+
+## 7. Discount signals
+
+Apply the technical screening rules to every company eligible in the active universe profile.
+
+### 7.1 Rank-dependent thresholds
+
+- Rank #1–#10: discount threshold is the -3 line.
+- Rank #11 and below: discount threshold is the -4 line.
+
+A discount condition is met when the latest completed daily close is at or below the applicable lower line.
+
+The close is the configured source for the indicator; do not use an intraday low instead.
+
+A discount signal is valid only when:
+
+- Market-cap eligibility is met.
+- The company has at least 10 years of listing history.
+- At least 2,500 valid daily bars exist.
+- The channel is strictly rising.
+- The applicable lower line is above zero.
+- Price data is sufficiently fresh and reliable.
+- The stock meets the applicable threshold.
+
+Store the exact threshold, rank, universe profile, channel values, data date, and price used to make every decision.
+
+### 7.2 One-time discount alerts
+
+Use persistent signal episodes.
+
+For each security and applicable threshold:
+
+- The first qualifying entry creates an episode.
+- Remaining below the threshold does not create daily duplicate alerts.
+- A completed daily close above the applicable threshold resets the signal and permits a future new episode.
+- A later qualifying entry may create another episode.
+- Repeated job execution for the same scan date must not create duplicates.
+
+When a rank change changes a company's applicable threshold, re-evaluate the signal under the new threshold. Record the rank change and reason for any new signal.
+
+Do not silently reset a signal simply because the rank changes, but do not ignore a newly applicable threshold either.
+
+A threshold crossing is evaluated on completed daily data at the scan. Do not create notifications for transient intraday crossings that disappeared before the close.
+
+---
+
+# PART IV — PREMIUM AND PORTFOLIO RISK MONITORING
+
+## 8. Premium signals
+
+Run a daily premium scan for eligible equities held in connected IBKR portfolios.
+
+The premium scan must include:
+
+- Owned securities in the qualifying company universe.
+- Owned securities ranked outside the top 50.
+- Owned securities whose market capitalization has fallen below $50B.
+- Other owned operating-company equities with enough valid history to calculate the same daily indicator.
+
+Do not generate a personal "sell this stock" alert for a company the user does not own.
+
+ETFs and indices may appear in the portfolio table. Do not apply company fundamental research to them as if they were operating companies.
+
+### 8.1 Thresholds
+
+For an eligible owned security:
+
+- +1 line: Premium.
+- +2 line: Extra premium.
+
+A completed daily close at or above a relevant upper line qualifies for that threshold.
+
+The +1 and +2 signals are separate. Reaching +2 during an active +1 episode generates a separate extra-premium event.
+
+### 8.2 One-time premium episodes
+
+Track separate state for +1 and +2.
+
+- Notify once when a threshold episode first becomes active.
+- Do not notify every day the price stays above a line.
+- Re-arm only when a completed daily close moves back below that threshold.
+- Allow a later re-entry to create a new episode.
+
+The user wants premium alerts as informational sell signals, not automatic trading instructions.
+
+Run the AI fundamental research required for qualifying premium events, but do not block a valid premium alert merely because the AI report is unavailable. Clearly label the research status.
+
+### 8.3 Portfolio classification tags
+
+Use the same channel calculation for portfolio holdings with sufficient historical data.
+
+The tags should be:
+
+- Discounted.
+- Premium.
+- Extra premium.
+- Unclassified/unavailable.
+
+A held stock outside the main market-cap universe uses the non-top-10 discount threshold, -4, unless a specifically documented alternative rule is approved.
+
+Never mislabel an unavailable calculation as a normal valuation status.
+
+---
+
+## 9. Fundamental risk monitoring of holdings
+
+Independently of discount and premium thresholds, perform a daily material-risk review for owned operating-company stocks that:
+
+- Are ranked outside the top 50 in the applicable qualifying universe; or
+- Have market capitalization below $50B.
+
+These holdings must not disappear from risk monitoring merely because they no longer qualify for the main company list.
+
+The daily review should check for new material filings, earnings releases, material announcements, news, or other developments that may indicate deteriorating financial health.
+
+Run a full fundamental report for a newly monitored holding or when new evidence materially changes the previous assessment. Reuse a still-current report only when the daily evidence check finds no meaningful change. Make the report's research timestamp visible; never claim that a full report was regenerated if only news/filing monitoring ran.
+
+Use explicit material-change criteria and suppress duplicate unresolved alerts.
+
+If a holding later returns to the top 50 and remains above $50B, preserve its previous risk history. Do not erase an earlier material finding.
+
+---
+
+# PART V — FUNDAMENTAL AI RESEARCH AND ALERT CLASSIFICATION
+
+## 10. Fundamental research prompt
+
+Use the following core prompt for AI research. Supply the verified company name, ticker, primary exchange, reporting currency, and research date.
+
+### Research instructions
+
+Analyze this company for a potential long-term investment.
+
+**COMPANY:** [Company name]
+
+**TICKER:** [Ticker]
+
+**PRIMARY EXCHANGE:** [Exchange]
+
+**REPORTING CURRENCY:** [Currency]
+
+**RESEARCH DATE:** [Date]
+
+My strategy identifies stocks whose prices have fallen substantially below their historical trend. I assess the technical entry separately. Your job is to investigate the business objectively and answer two questions:
+
+1. Is the stock falling for temporary reasons, or because of lasting damage to the business?
+2. Is the company at risk of bankruptcy, or financially strong enough to survive its current problems?
+
+Use current web research. Read the latest available annual report and quarterly or interim report, including relevant financial-statement notes. Check subsequent earnings releases, material announcements, and reliable reporting about the reasons for the decline. Prioritize regulatory filings, the company's investor-relations materials, and credible independent reporting. Treat management's expectations as claims to evaluate.
+
+Use measures appropriate to the industry. For banks and insurers, for example, examine regulatory capital, liquidity, asset quality, and relevant industry disclosures rather than applying ordinary corporate debt ratios mechanically. Explain whether financial distress could seriously damage existing shareholders even if the company avoids bankruptcy.
+
+Assess bankruptcy risk as Low, Moderate, High, or Unclear. This is a qualitative judgment, not a calculated probability. Explain the evidence and limitations.
+
+**OUTPUT FORMAT**
+
+Write for a beginner. Explain unfamiliar terms briefly. Keep the main report to approximately 500–800 words, with sources listed separately.
+
+Finish with one classification:
+
+- Meets these two fundamental checks.
+- Does not meet one or both checks.
+- Insufficient evidence to decide.
+
+Explain that classification in two or three simple sentences.
+
+Keep technical-analysis commentary outside this report.
+
+### 10.1 Research integrity
+
+The AI research system must:
+
+- Use current web research.
+- Prioritize primary regulatory filings and official investor-relations materials.
+- Read the latest available annual and quarterly/interim reports.
+- Examine relevant financial-statement notes.
+- Review subsequent material announcements and credible independent reporting.
+- Provide working source URLs, titles, and publication dates.
+- Distinguish established facts from management claims, forecasts, allegations, and the AI's interpretation.
+- State the research cutoff date.
+- Identify missing or inaccessible financial documents.
+- Assess liquidity, debt maturities, refinancing requirements, covenants, dilution, financial-statement risks, and shareholder impairment where relevant.
+- Use industry-appropriate financial ratios and regulatory disclosures.
+- Never fabricate citations, financial figures, documents, or quotations.
+- Treat an unavailable source or failed AI request as incomplete evidence.
+
+Persist the report, source references, conclusion, operational bankruptcy-risk assessment, research timestamp, and model/provider metadata.
+
+### 10.2 Separate the research outcome from the operational status
+
+Maintain two independent outputs.
+
+**Research conclusion:** One of the three exact classifications in the research prompt.
+
+**Operational assessment:** Bankruptcy risk Low, Moderate, High, or Unclear, together with a structured assessment of whether material lasting damage has been established and whether sufficient evidence is available.
+
+Do not infer the operational risk level solely from the wording of the overall classification.
+
+### 10.3 Rules for discount inclusion and ordering
+
+The user wants moderate-risk opportunities to remain visible and included in the digest, but with an unmistakable warning.
+
+Use these operational categories:
+
+**Green — Meets the checks**
+
+- Sufficient evidence is available.
+- There is no established material lasting damage that invalidates the investment thesis.
+- Bankruptcy risk is Low.
+- The research conclusion supports passing both fundamental checks.
+
+Show green candidates first.
+
+**Amber — Caution**
+
+- Bankruptcy risk is Moderate.
+- The available evidence is sufficient to present the opportunity with an explicit warning.
+- The report must explain the additional risk and the limitations.
+
+Show amber candidates after green candidates. Include them in the discount digest with the warning plainly displayed.
+
+Amber is not the same as passing both fundamental checks. Never display an amber company as green.
+
+**Red — Does not meet the checks**
+
+- There is compelling evidence of material lasting damage or other serious fundamental problems; or
+- Bankruptcy risk is High.
+
+Do not present the company as an actionable, fundamentally cleared discount or include it in the normal discount digest. Retain its research in the database and make the reason accessible through an appropriate risk/withheld-results UI.
+
+**Grey — Inconclusive**
+
+- Research is incomplete, contradictory, or insufficient.
+- Bankruptcy risk is Unclear.
+- A necessary report or critical source could not be verified.
+
+Do not represent the company as passing, and do not include it in the normal discount digest.
+
+If evidence is unavailable because a service failed, record the failure explicitly.
+
+### 10.4 Ordering
+
+The main Today's Discounts cards and notification digest should contain Green candidates first and Amber candidates afterward.
+
+Within each group, use deterministic ordering by company rank, then a documented tie-breaker.
+
+Display the rank at scan time, for example `#53 MSFT`.
+
+Do not silently discard an Amber candidate. Do not promote a Red or Grey candidate to the main actionable discount list just because it meets a technical threshold.
+
+Provide appropriate access to withheld/flagged candidates and their reasoning without labeling them approved opportunities.
+
+### 10.5 Premium research
+
+Run the fundamental assessment when a qualifying portfolio premium event occurs, but the premium alert must remain available even if the research service fails.
+
+Present the technical premium event and the fundamental result as separate facts.
+
+Do not let the model automatically decide whether to place or modify an order.
+
+---
+
+# PART VI — MARKET DATA AND EUROPEAN LISTINGS
+
+## 11. Market-data provider architecture
+
+Yahoo Finance is the first provider to evaluate. If its terms do not permit the required public use, or its coverage and reliability do not meet production requirements, choose a suitable alternative.
+
+Encapsulate the provider behind a TypeScript interface with well-defined operations for:
+
+- Security search and identification.
+- Primary listings.
+- Market capitalization.
+- Historical daily OHLC data.
+- Corporate actions/adjustments.
+- Company news.
+- Data freshness and source metadata.
+- FX rates where needed.
+
+Do not assume all operations can be obtained from a single provider.
+
+Do not silently combine values from different providers without recording their source and policy.
+
+Use caching, sensible concurrency limits, retry backoff, and deduplication.
+
+### 11.1 Required market-data metadata
+
+For each price series, preserve:
+
+- Company and security identity.
+- Symbol and exchange.
+- Trading currency.
+- Timeframe.
+- Candle timestamp and exchange trading session.
+- Price-adjustment policy.
+- Data provider.
+- Retrieval timestamp.
+- Freshness status.
+- Completeness status.
+
+Validate duplicate bars, missing sessions, corporate-action anomalies, and implausible values.
+
+### 11.2 Price display
+
+Today's Overview should show the price used for the screening signal, preferably labeled as the latest completed daily close with its session date.
+
+If a genuinely current quote is available from a valid source, it may also be displayed separately with a clear quote timestamp and label.
+
+Do not label yesterday's close as a live price.
+
+The current IBKR quote used for order preparation is a separate source and must be labeled as described in Part XI.
+
+## 12. European EUR equivalent
+
+For each Today's Discounts card, attempt to identify a verified European-listed instrument that trades in EUR.
+
+This mapping is a convenience for viewing prices and potentially routing an order. It must not change the underlying screening calculations.
+
+Verify:
+
+- Company identity.
+- Share class.
+- Security type.
+- Primary listing.
+- European exchange.
+- Trading currency.
+- Contract identity where supported.
+- Whether the security is an ordinary share, ADR, depositary receipt, or another instrument type.
+
+Do not assume that similar tickers indicate equivalent securities.
+
+Store mapping confidence/status and verification timestamp.
+
+If no valid EUR equivalent can be established, display "No verified EUR equivalent" rather than inventing a ticker.
+
+The original primary listing remains the instrument for:
+
+- Market-cap eligibility.
+- Ranking.
+- Historical price calculations.
+- Trend filtering.
+- Discount and premium thresholds.
+
+The European equivalent must never silently replace the canonical listing in a screening calculation.
+
+---
+
+# PART VII — SCHEDULED WORKFLOWS AND SUPABASE DATA MODEL
+
+## 13. Backend architecture
+
+Use Supabase Postgres, Auth, RLS, Edge Functions, and Cron.
+
+Do not create a dedicated permanently running application backend by default.
+
+Use database functions for suitable transactional or lightweight work and Edge Functions for supported external API calls.
+
+Do not force a workload into an Edge Function if it requires a persistent broker session or connection that cannot be implemented reliably there.
+
+Any additional long-running service must be proposed as an architectural exception, with its cost, security implications, and operational requirements, and approved before adoption.
+
+### 13.1 Suggested logical functions
+
+Organize capabilities into cohesive units such as:
+
+- Universe refresh.
+- Daily screening.
+- Fundamental research.
+- Notification dispatch.
+- IBKR authentication/account status.
+- IBKR quote retrieval/streaming where feasible.
+- IBKR order lifecycle.
+- Portfolio reconciliation.
+- Analytics.
+- Retention cleanup.
+- Health and operational status.
+
+These are logical responsibilities, not a requirement to create an excessive number of functions.
+
+Keep shared financial logic independently testable.
+
+### 13.2 Suggested database entities
+
+Design a normalized schema with foreign keys, appropriate indexes, stable identifiers, constraints, and RLS.
+
+Cover at least:
+
+- User profiles.
+- Notification preferences.
+- Web Push subscriptions.
+- Companies.
+- Securities.
+- Exchanges and trading currencies.
+- European equivalent mappings.
+- Historical daily price data or cached series metadata.
+- Market-cap snapshots.
+- Universe snapshots/ranks per mode.
+- Universe membership-change events.
+- Daily scan executions.
+- Today's Discounts.
+- Signal states and episodes.
+- Fundamental reports and source references.
+- Broker connection/authorization metadata.
+- Orders, order updates, fills/executions, and reconciliation states.
+- Minimal portfolio snapshots when needed.
+- Notification events and delivery attempts.
+- Security/audit events.
+
+Do not use ticker symbols as primary keys.
+
+Use idempotency keys and unique constraints where repeated processing could otherwise create duplicates.
+
+### 13.3 Today's Discounts
+
+This is the persistent source for the public discount cards.
+
+Store or reference:
+
+- Scan ID and local scan date.
+- Universe mode.
+- Company and canonical security ID.
+- Rank used at scan time.
+- Market capitalization and currency.
+- Latest completed daily close and session date.
+- Applicable threshold (-3 or -4).
+- Calculated channel endpoints and deviation levels.
+- Trend and eligibility status.
+- Fundamental conclusion and operational risk category.
+- Report and source references.
+- Verified European equivalent, if available.
+- Signal episode identifier.
+- Data freshness.
+- Result creation timestamp.
+
+A normalized table and read-only view are acceptable if the application's logical data contract remains clear.
+
+### 13.4 The Company List
+
+Provide the ranked list of qualifying companies for the active universe mode.
+
+Store sufficient historical snapshots to detect additions, removals, rank changes, and qualification changes.
+
+The initial response must contain the first 15 rows and support stable pagination.
+
+### 13.5 The short summary
+
+Display:
+
+- Added today.
+- Removed today.
+- Added during the trailing seven days.
+- Removed during the trailing seven days.
+
+Calculate changes separately for each universe profile.
+
+Define membership changes from consistent snapshots. Today's changes should compare the current successful snapshot to the preceding comparable snapshot.
+
+Keep seven days of detailed membership-change events for the summary. De-duplicate presentation appropriately, while preserving the underlying transition history.
+
+Run a daily cleanup job to remove expired summary data. Do not delete audit history or data required for signal deduplication.
+
+### 13.6 Minimal storage policy
+
+Do not store full IBKR portfolio responses forever if they can be fetched when needed.
+
+Persist the minimum necessary to support:
+
+- Open-order tracking.
+- Execution and trade history.
+- Reliable portfolio calculations.
+- Financial reconciliation.
+- Auditability.
+- Notification history.
+- Required user-visible history.
+
+Acknowledge that order and execution records must be retained long enough to support the required trade history and realized P&L calculations.
+
+Define retention policies for transient market data, job logs, cached news, failed notifications, and sensitive broker metadata.
+
+### 13.7 RLS and authorization
+
+Enable and test Row Level Security for all user-owned data.
+
+Public unauthenticated access is permitted only to explicitly public screening results, rankings, and related public data.
+
+Broker credentials/authorization material, positions, orders, executions, analytics, and notification subscriptions are private to the owner.
+
+Derive authorization from the authenticated session. Do not trust a browser-supplied `user_id`.
+
+Keep service-role and third-party credentials on trusted server-side infrastructure only.
+
+Run cross-user isolation tests using at least two users.
+
+---
+
+# PART VIII — NOTIFICATIONS
+
+## 14. Notification channels and user preferences
+
+Support two independently opt-in channels:
+
+1. Web Push.
+2. Email via Resend.
+
+Users configure both from Profile → Notifications.
+
+A user may enable either, both, or neither.
+
+Do not assume that creating a browser subscription means that permission is still valid later.
+
+### 14.1 Web Push
+
+Use standards-compliant Web Push and a service worker.
+
+Support desktop browsers and compatible mobile browsers.
+
+For iPhone, clearly explain the requirement for a compatible iOS version and adding the web application to the Home Screen before enabling push.
+
+Handle:
+
+- Permission denial.
+- Unsupported browsers.
+- Invalid or expired subscriptions.
+- Revoked permissions.
+- Device changes.
+- Subscription rotation.
+- Delivery errors.
+- User opt-out.
+
+Generate and dispatch notifications from the backend. They must not depend on a webpage staying open.
+
+Store the required VAPID or equivalent credentials only as backend secrets.
+
+### 14.2 Email through Resend
+
+Use Resend for transactional notification delivery.
+
+Implement:
+
+- Verified sender domain.
+- Appropriate SPF, DKIM, and DMARC configuration.
+- Secure API-key storage.
+- User opt-in enforcement.
+- Delivery and failure tracking.
+- Retries with deduplication.
+- Appropriate preference-management and unsubscribe behavior.
+- Redaction of secrets and private portfolio data from logs.
+
+Use supported webhooks or delivery-status mechanisms if needed, and verify them securely.
+
+Do not equate a successfully initiated email API request with confirmed delivery.
+
+### 14.3 Two logical digests per daily scan
+
+Respect the limit of at most two logical notification digests per daily scan:
+
+1. **Today's Discounts:** qualifying Green and Amber discount candidates.
+2. **Portfolio Alerts:** premium/extra-premium signals and newly identified material fundamental risks for the user's holdings.
+
+The second digest combines premium and new material-risk events so that the application does not create a third logical notification category.
+
+Each digest may be delivered through one or both opted-in channels. Web Push and email copies of the same digest represent one logical notification, not two separate scan events.
+
+Use stable digest identifiers and per-channel delivery state.
+
+Do not send empty digests unless an explicit notification preference requires them.
+
+If required AI research for a discount candidate is incomplete, do not silently mark that candidate as cleared.
+
+### 14.4 Discount digest contents
+
+List the qualifying candidates in Green-then-Amber order.
+
+Each entry should include, where available:
+
+- Rank and ticker.
+- Company name.
+- Latest completed close and currency.
+- Applicable discount threshold.
+- Operational bankruptcy-risk classification.
+- Fundamental conclusion.
+- Concise reason/news summary.
+- European EUR equivalent, if verified.
+
+Amber entries must be clearly marked as higher risk and listed after Green entries.
+
+High-risk and inconclusive candidates must not appear as passing discounts.
+
+### 14.5 Portfolio alert digest contents
+
+Include relevant:
+
+- +1 premium events.
+- +2 extra-premium events.
+- Newly identified material financial risks for holdings outside the top 50 or below $50B.
+- Clear distinction between price signals and fundamental risks.
+
+Do not send repeated alerts for unresolved episodes or unchanged material findings.
+
+If a stock simultaneously has a new premium event and a new material-risk finding, combine them into one portfolio digest entry where appropriate.
+
+---
+
+# PART IX — AUTHENTICATION AND BROKER ACCOUNT SECURITY
+
+## 15. Supabase authentication
+
+The website supports:
+
+- Email/password.
+- Google SSO.
+
+Apple sign-in is not required.
+
+Implement secure session handling, email verification, password reset, OAuth callbacks, validated redirects, logout, protected routes, and appropriate protections against authentication abuse.
+
+## 16. Profile pages
+
+The authenticated navigation includes a user icon and Profile label.
+
+Profile has three subpages:
+
+- Security.
+- Broker.
+- Notifications.
+
+### 16.1 Security
+
+Display the user's verified email address as read-only.
+
+Allow password changes for password-based accounts.
+
+For Google-only accounts, do not display a password-change flow that cannot work. Explain the appropriate account-management behavior.
+
+### 16.2 Broker
+
+Provide the verified IBKR linking workflow.
+
+The page should show:
+
+- The supported connection method.
+- Setup instructions based on the actual integration.
+- Required account permissions.
+- Required API access/approval.
+- Required market-data subscriptions.
+- Whether the user's setup requires a gateway, application registration, or ongoing local process.
+- A Test connection action.
+- Connection status.
+- Last successful verification.
+- Clear errors and troubleshooting guidance.
+
+Only mark the account linked after the backend confirms that the required access works.
+
+If official IBKR access requires user interaction or recurring authentication, explain that clearly. Do not claim perpetual connectivity if it does not exist.
+
+Do not store a reusable IBKR username or password.
+
+Support secure disconnection and removal/revocation of authorization where available.
+
+### 16.3 Required broker-specific capabilities
+
+Before marking IBKR fully supported, demonstrate the capabilities required for the application's scope:
+
+- Authorized account identity.
+- Open positions.
+- Current account values.
+- Current or appropriately labeled delayed quotes.
+- Contract discovery.
+- Exchange/destination identification.
+- Estimated commissions where supported.
+- Limit-order placement.
+- Order modification/cancellation.
+- Execution/partial-fill information.
+- Session recovery and reconciliation.
+
+If one or more are unavailable, show their implementation status and do not claim complete broker integration.
+
+---
+
+# PART X — PORTFOLIO AND ORDERS
+
+## 17. Portfolio refresh
+
+The Portfolio and Analytics pages refresh automatically every five minutes while the page is visible.
+
+Pause or reduce unnecessary polling when the page is hidden.
+
+Display a countdown to the next eligible refresh based on actual refresh state.
+
+Provide a mobile-friendly manual refresh gesture and an explicit refresh control where useful.
+
+Manual refresh is permitted at most once per minute.
+
+Backend and frontend must both prevent excessive overlapping refreshes.
+
+After a refresh, show the last successful data timestamp. Failed requests must not reset the UI to a misleading zero-value state.
+
+The frontend should not poll the broker directly from an insecure browser context. Use the verified backend/API flow.
+
+## 18. Portfolio page
+
+Route: `/portfolio`
+
+Login required.
+
+If IBKR is not linked, provide a short explanation and a button to Profile → Broker.
+
+Otherwise, display a sortable positions table with:
+
+- Ticker.
+- Company/security name.
+- Current price and currency.
+- Total position quantity.
+- Total invested/current-position cost basis.
+- Current position value.
+- Base price/average cost per unit, with its definition documented.
+- Daily P&L.
+- Unrealized P&L.
+- Valuation tag: Discounted, Premium, Extra premium, or Unavailable.
+
+Default sort: ascending unrealized P&L, most negative first.
+
+Provide sorting for all appropriate columns.
+
+### 18.1 Visual classifications
+
+Use accessible labels and restrained styles:
+
+- Discounted: green.
+- Premium: yellow.
+- Extra premium: gold/orange.
+- Unavailable: neutral.
+
+Never rely on color alone.
+
+### 18.2 Portfolio summary row
+
+Display:
+
+- Total cost basis for current open positions.
+- Current portfolio market value.
+- Total daily P&L.
+- Total unrealized P&L.
+
+Ensure all aggregate values use a consistent reporting currency or are broken down by native currency.
+
+Do not define unrealized P&L simply as cost basis minus current value. Validate the correct sign and meaning against the broker's figures, including fees and currency effects.
+
+## 19. Order/trade history
+
+Below the positions table, display orders and executions in descending date order.
+
+Show:
+
+- Ticker and instrument.
+- Buy/sell action.
+- Quantity.
+- Requested order price.
+- Actual execution price, when available.
+- Exchange/market destination.
+- Estimated commission.
+- Actual commission, where available.
+- Requested total.
+- Actual executed total.
+- Order status.
+- Relevant timestamps.
+
+Distinguish an order from its individual executions. One order may have multiple partial fills at different prices.
+
+For an open order, show the requested limit price and estimated costs.
+
+For a filled order, compute actual totals from executions and actual fees, preserving the original requested price.
+
+Do not overwrite the requested limit price with the executed price.
+
+---
+
+# PART XI — IBKR QUOTES AND ORDER LIFECYCLE
+
+## 20. IBKR current price
+
+The order preparation modal/card must display the current price obtained through the verified IBKR market-data interface available to the user's account.
+
+Label it clearly:
+
+**IBKR current price**
+
+Also show:
+
+- Instrument and exchange.
+- Currency.
+- Last update time or freshness.
+- Whether the quote is live, delayed, stale, or unavailable.
+- Relevant bid/ask information where supported.
+
+The user expects a quote that refreshes frequently, approximately every few seconds where technically and legally possible. Investigate the actual supported quote interface and rate limits.
+
+Do not claim true real-time quotes if the subscription or API only provides delayed or periodically refreshed data.
+
+Do not use Yahoo Finance as a silent substitute for IBKR order-entry prices.
+
+If a current IBKR quote is unavailable or stale, require explicit review of the limitation and prevent the app from presenting the price as current.
+
+## 21. Contract and exchange selection
+
+Resolve the actual tradable IBKR contract rather than submitting an order based solely on a ticker symbol.
+
+Default destination preference:
+
+1. Xetra, if a verified compatible listing and destination are available.
+2. AEB, if Xetra is unavailable and IBKR confirms a suitable compatible instrument/destination.
+
+Do not assume either destination is available for all stocks.
+
+Investigate official IBKR contract-discovery and routing semantics. Distinguish specific exchange selection from SMART routing.
+
+For each supported choice, identify:
+
+- Contract ID.
+- Security type.
+- Currency.
+- Exchange and routing destination.
+- Relevant trading permissions.
+- Compatibility of the selected EUR listing with the intended company/security.
+
+Provide alternative destinations only when the actual broker metadata supports them.
+
+## 22. Order preparation modal
+
+Before submission, show:
+
+- Instrument and contract.
+- Company name and ticker.
+- Exchange/destination.
+- Currency.
+- Buy or sell.
+- Quantity.
+- Limit price.
+- IBKR current quote and freshness.
+- Estimated commission.
+- Estimated total.
+- Any relevant warnings or limitations.
+
+The user must explicitly confirm the order.
+
+Validate quantity, limit price, instrument, contract, authorization, permissions, broker connectivity, and other relevant broker restrictions.
+
+Explain that estimated commissions can differ from actual commissions.
+
+For buys, show the estimated debit including fees. For sells, show estimated proceeds after fees.
+
+Use correct currency units and signs.
+
+Do not submit an order immediately from the public Overview card. Its Submit Order action must open the preparation flow.
+
+## 23. Order submission and state reconciliation
+
+After explicit confirmation:
+
+1. Create a local idempotent order-intent record.
+2. Submit through the verified IBKR interface.
+3. Store the broker order identifier if returned.
+4. Fetch/reconcile authoritative broker status.
+5. Display the state to the user.
+6. Continue tracking updates, partial fills, and final execution.
+7. Allow changes or cancellation only while the broker confirms the order is eligible.
+8. Preserve order and execution history.
+
+Handle:
+
+- Submitting.
+- Submitted/working.
+- Partially filled.
+- Filled.
+- Modification pending.
+- Cancel pending.
+- Cancelled.
+- Rejected.
+- Expired.
+- Unknown/needs reconciliation.
+
+Use supported order events or bounded polling according to the verified interface.
+
+Do not blindly resubmit after a timeout. First determine whether the broker accepted the original order.
+
+A successful API response does not mean the order was filled.
+
+A filled order must not be treated as modifiable.
+
+Any order modification requires explicit user action and confirmation.
+
+---
+
+# PART XII — FINANCIAL ANALYTICS
+
+## 24. Analytics page
+
+Route: `/analytics`
+
+Login required.
+
+If IBKR is not linked, direct the user to Profile → Broker.
+
+Otherwise show:
+
+- Total portfolio size.
+- Cost basis of current positions.
+- Unrealized P&L.
+- Realized trading P&L.
+- Dividends received.
+- Commissions and other available trading costs.
+- Combined performance figures.
+- Historical performance where the underlying records support accurate calculation.
+
+### 24.1 Realized performance
+
+Realized trading P&L must include profitable and loss-making closed positions, including partial sales.
+
+Dividends must be reported separately from trading gains and losses.
+
+Provide a toggle to include or exclude dividends in the combined realized-performance figure.
+
+Display commissions and relevant trading costs separately and define whether they are included in each net P&L metric.
+
+Avoid double-counting fees or dividends already reflected in authoritative broker totals.
+
+### 24.2 Data requirements
+
+Investigate the required IBKR reports and records for:
+
+- Opening positions.
+- Buys and sells.
+- Partial sales.
+- Closing positions.
+- Cost-basis determination.
+- Realized gains and losses.
+- Dividends and withholding taxes where available.
+- Commissions and transaction fees.
+- Stock splits and corporate actions.
+- Currency conversions.
+- Transfers into or out of the brokerage account.
+
+Current positions alone are insufficient to reconstruct full realized P&L.
+
+If historical data is incomplete, disclose the coverage gap. Do not infer missing realized gains from the current holdings table.
+
+### 24.3 Currency treatment
+
+The portfolio may contain multiple currencies.
+
+Define the reporting currency and documented FX conversion method.
+
+Aggregate totals must be converted using defensible FX rates and timestamps, or displayed separately by currency.
+
+Never sum values denominated in different currencies without conversion.
+
+Clearly distinguish native-currency performance from converted portfolio performance.
+
+---
+
+# PART XIII — USER INTERFACE
+
+## 25. Global design
+
+Build a responsive, mobile-first website with:
+
+- Light and dark themes.
+- Consistent accessible typography.
+- Clear loading, error, empty, stale-data, and unavailable states.
+- Keyboard and screen-reader support where practical.
+- Sensible table behavior on small screens.
+- Restrained, meaningful color usage.
+- Persistent theme preference.
+
+Do not represent financial risk using only color.
+
+## 26. Page 1 — Today's Overview
+
+Route: `/`
+
+Public; no login required.
+
+### 26.1 Last scan timestamp
+
+Display the latest successful scan/data-fetch time as small, right-aligned text at the top.
+
+Use Europe/Sofia local time.
+
+Do not substitute the last attempted job time for the last successful scan.
+
+### 26.2 Today's Discounts cards
+
+Each card represents an actionable discount candidate with sufficient fundamental evidence under the classification rules.
+
+Display:
+
+**Header**
+- Rank and ticker, e.g. `#53 MSFT`, on the left.
+- Latest completed daily closing price and currency, on the right.
+
+**Subtitle**
+- Verified European equivalent ticker.
+- European price and currency, where available.
+
+**Body**
+- Company name.
+- Concise summary of relevant news and fundamental research.
+- Fundamental conclusion.
+- Bankruptcy-risk classification.
+- Green or Amber status with accessible labels.
+- Research/data timestamp when useful.
+
+Order Green candidates first and Amber candidates afterward.
+
+The card rank must reflect the qualifying list at the time of the scan.
+
+High-risk and inconclusive candidates must not be presented as cleared discounts. A separate flagged/withheld-results panel may show their technical trigger and reason for exclusion.
+
+### 26.3 Card actions
+
+At the bottom of each card:
+
+- An underlined text action labeled **Show on graph**.
+- A **Submit Order** action for authenticated users who have successfully linked IBKR.
+
+Show on graph navigates to Quotes and preselects the original canonical screening security.
+
+Submit Order opens the order-preparation modal. It must not place the order immediately.
+
+If the user is authenticated but has not linked IBKR, provide a route to Profile → Broker instead of presenting a working order action.
+
+### 26.4 The Company List
+
+Below the cards, show a section titled **The Company List**.
+
+Include the universe selector and the **The short summary** component.
+
+The summary must show today's additions/removals and trailing seven-day additions/removals separately.
+
+The company table displays the first 15 ranked companies, followed by a **Load more** action.
+
+Columns:
+
+1. Rank.
+2. Company/ticker.
+3. Current price and currency.
+4. Today's movement, red for negative and green for positive.
+5. Market capitalization.
+
+Distinguish stale/unavailable prices from genuine zero values.
+
+Visually highlight the top 10 rows with a clearly visible but restrained background.
+
+## 27. Page 2 — Portfolio
+
+Route: `/portfolio`
+
+Login required.
+
+If no broker is linked, display a short message and button to Profile → Broker.
+
+Otherwise, show:
+
+1. Refresh countdown.
+2. Current positions table.
+3. Portfolio summary row.
+4. Order/trade history.
+
+Use the financial definitions and order-state rules described earlier.
+
+On smaller screens, maintain context and usability while exposing the complete set of table fields.
+
+Display the last successful refresh and relevant limitations.
+
+## 28. Page 3 — Analytics
+
+Route: `/analytics`
+
+Login required.
+
+If no broker is linked, display the broker-link prompt.
+
+Otherwise, display:
+
+- Total portfolio value.
+- Current-position cost basis.
+- Unrealized P&L.
+- Realized trading P&L.
+- Dividends.
+- Fees and commissions.
+- Combined performance.
+- Historical performance where supported.
+
+Include the five-minute visible-page refresh and one-minute manual-refresh cooldown.
+
+Make clear which numbers are broker-reported and which are independently calculated.
+
+## 29. Page 4 — Quotes
+
+Route: `/quotes`
+
+Public; no login required.
+
+### 29.1 Stock selector
+
+At the top, provide a selector labeled:
+
+**Select a stock from today**
+
+Initially, show the original securities from the latest Today's Discounts list.
+
+Provide a search input at the top of the selector so users may find another ticker or company name.
+
+Search results must not silently change the currently selected instrument.
+
+If navigated from Show on graph, preselect the relevant original listing.
+
+If there are no discounts today, display an empty state explaining that no stocks are present in today's list. The user may still search for a security manually.
+
+### 29.2 Default graph
+
+Display:
+
+- Daily candles.
+- Approximately ten years of historical data.
+- The Standard Deviation Channel using the exact default configuration.
+- Small forward chart space beyond the last completed candle.
+
+Use the same indicator algorithm, source series, and corporate-action policy as the screening engine.
+
+### 29.3 Chart interactions
+
+Support:
+
+- Horizontal panning.
+- Zooming.
+- Price-scale adjustment.
+- Candlestick, line, and mountain/area views.
+- Hiding/showing the indicator.
+- Suitable chart-range selection.
+
+Provide these range controls:
+
+- 1D.
+- 5D.
+- 1M.
+- 6M.
+- YTD.
+- 1Y.
+- 5Y.
+- MAX.
+
+These are **display-range controls**, not alternate indicator timeframes. The indicator remains a daily calculation.
+
+The charting library must be permitted for the intended public/commercial use. Do not imply TradingView equivalence unless calculations and price inputs have been tested against TradingView.
+
+## 30. Page 5 — Profile
+
+Route: `/profile`
+
+Login required.
+
+Subpages:
+
+- Security.
+- Broker.
+- Notifications.
+
+### 30.1 Security
+
+Display a non-editable verified email address.
+
+Support password changes and reset workflows where applicable.
+
+### 30.2 Broker
+
+Provide the verified connection and setup flow described in Part IX.
+
+Show tested connection status and clear instructions for required IBKR permissions and subscriptions.
+
+Do not store reusable passwords.
+
+### 30.3 Notifications
+
+Allow independent opt-in for Web Push and Resend email.
+
+Explain iPhone Home Screen installation and permission requirements when applicable.
+
+Show whether each channel is configured and provide actionable error messages.
+
+Preferences must be enforced server-side.
+
+---
+
+# PART XIV — SECURITY AND PRIVACY
+
+## 31. Security baseline
+
+Implement:
+
+- TLS for network communication.
+- Provider-supported database/storage encryption at rest.
+- Application-level encryption for stored secrets where appropriate.
+- Encryption keys kept separately from encrypted data.
+- RLS and least-privilege authorization.
+- Secure authentication callbacks and redirect validation.
+- Secret redaction and safe logging.
+- Rate limiting for sensitive requests.
+- Protection against XSS, injection, CSRF where applicable, broken access control, and insecure direct object references.
+- Secure handling of tokens and session material.
+- Development/production separation.
+- Appropriate audit events for sensitive account operations.
+
+Never claim that the server cannot access data that it must decrypt and process.
+
+The application needs to access the user's portfolio to calculate analytics and submit explicitly confirmed orders. Therefore, do not call the design end-to-end encrypted or zero-knowledge unless that claim is technically true.
+
+The goal is to ensure that other users cannot access the owner's financial information, that only the minimum required services can process it, and that sensitive information is protected against unauthorized access.
+
+### 31.1 Brokerage secrets
+
+Do not store reusable IBKR login passwords.
+
+Store only the minimum supported authorization material, encrypted where required and permitted.
+
+Document token lifecycle, session expiration, refresh, revocation, and rotation.
+
+Never log authentication tokens or expose them to frontend code.
+
+### 31.2 AI privacy
+
+Send only company-identifying and research-relevant information to AI providers.
+
+Do not send brokerage credentials, account identifiers, unrelated holdings, or unnecessary personal financial details to the fundamental-research service.
+
+Separate publicly sourced company research from private portfolio records.
+
+### 31.3 Trading safeguards
+
+Never:
+
+- Submit a real order in a test environment.
+- Execute an order solely because AI recommends it.
+- Automatically modify an order based on AI findings.
+- Retry a possibly accepted order without reconciliation.
+- Claim an order is filled because submission succeeded.
+- Misrepresent a delayed or unavailable quote as live.
+
+---
+
+# PART XV — OPERATIONS AND RETENTION
+
+## 32. Cleanup jobs
+
+Create daily cleanup/retention jobs using Supabase Cron.
+
+Clean up eligible expired seven-day summary entries, temporary data, expired subscription metadata, and other transient records according to a documented policy.
+
+Do not delete:
+
+- Open or unreconciled orders.
+- Required executions/trades.
+- Audit history.
+- Signal state required to prevent duplicate alerts.
+- Fundamental reports required for traceability.
+- Records subject to longer retention requirements.
+
+Cleanup must be idempotent and observable.
+
+## 33. Monitoring
+
+Track structured operational metrics for:
+
+- Scheduled scan start/completion.
+- Effective scan date and timezone.
+- Market universe sizes.
+- Securities successfully processed.
+- Skipped or failed securities and reasons.
+- Data-provider errors and throttling.
+- Missing historical data.
+- Stale prices.
+- AI research failures.
+- Alert and digest generation.
+- Web Push/email outcomes.
+- IBKR connection/quote failures.
+- Order submission and reconciliation.
+- Cleanup results.
+
+Do not put secrets or unnecessary private financial data in logs.
+
+The public site must show real scan status and must not imply that a scan succeeded when the required work failed.
+
+---
+
+# PART XVI — TESTING AND ACCEPTANCE
+
+## 34. Unit tests
+
+### Indicator
+
+Test:
+
+- Every default input.
+- Configurable source and length validation.
+- Regression calculation and endpoint orientation.
+- Increasing, decreasing, and constant series.
+- Standard-deviation normalization.
+- Upper +1/+2 and lower -3/-4.
+- Alternate maximum-high/low deviation mode.
+- Historical window boundaries.
+- Insufficient data.
+- Zero/negative lower lines.
+- Corporate-action adjustment behavior.
+- Threshold touches/crossings.
+- Completed-bar rules.
+
+Validate against expected outputs from the supplied Pine Script.
+
+### Company universe
+
+Test:
+
+- $50B threshold boundary.
+- USD-equivalent market capitalization.
+- Worldwide versus US-only ranking.
+- Top-10 and top-50 boundaries.
+- Primary listings.
+- Duplicate instruments, ADRs, and share classes.
+- Ten-year listing-history rule.
+- Insufficient daily history.
+- Stale/missing market caps.
+- FX data missing or stale.
+- Rank changes across thresholds.
+
+### Signals
+
+Test:
+
+- Rank 1–10 -3 trigger.
+- Rank 11+ -4 trigger.
+- +1 premium.
+- +2 extra premium.
+- Signal episode lifecycle.
+- Reset and re-entry.
+- Rank changes during active episodes.
+- Repeated scan execution.
+- Lower-channel zero filter.
+- Missing/stale daily data.
+- Portfolio holdings outside the main universe.
+
+### Fundamental research
+
+Test:
+
+- Three exact research conclusions.
+- Low, Moderate, High, and Unclear bankruptcy risk.
+- Green, Amber, Red, and Grey operational outcomes.
+- Missing report/source.
+- Conflicting evidence.
+- Provider timeout.
+- Research freshness.
+- Material-change detection.
+- Risk-alert deduplication.
+- Candidate ordering.
+- Notification suppression when evidence is insufficient.
+
+### Portfolio and accounting
+
+Test:
+
+- Open positions.
+- Partial fills and partial sales.
+- Fully closed positions.
+- Profit and loss realizations.
+- Dividends included/excluded.
+- Commissions and other fees.
+- Foreign currencies.
+- Corporate actions.
+- Missing historical executions.
+- Broker reconciliation.
+- Unavailable versus zero balances.
+
+## 35. Integration tests
+
+Test:
+
+- Supabase Cron invokes the correct jobs.
+- The 10:00 Sofia scan survives daylight-saving transitions.
+- Retries do not duplicate results or notifications.
+- Job failure preserves accurate stale/failed status.
+- RLS prevents cross-user access.
+- Push and email opt-in is enforced.
+- Invalid push subscriptions are handled.
+- Portfolio refresh respects its limits.
+- Broker sessions and permissions are validated.
+- Order timeout recovery avoids duplicate trades.
+- Partial fills and order modifications reconcile correctly.
+- European contract mappings are verified.
+- Cleanup preserves required records.
+
+Use mocks and the IBKR paper-trading environment where appropriate. No test may submit a real-money order.
+
+## 36. End-to-end acceptance criteria
+
+The application is not production-ready until all applicable criteria are demonstrated:
+
+1. Public users can access Today's Overview and Quotes without login.
+2. Worldwide and US-only universes can be selected without anonymous users unpredictably mutating shared backend state.
+3. The Company List ranks eligible companies by market cap and highlights the top 10.
+4. The seven-day summary accurately shows additions/removals and today's changes.
+5. The daily scan uses the intended completed daily bars at 10:00 Europe/Sofia time.
+6. The Standard Deviation Channel matches the supplied Pine Script within the documented tolerance.
+7. The uptrend filter uses the visual channel direction.
+8. The rank-dependent -3/-4 discount conditions and zero-line filter work correctly.
+9. Signal episodes do not produce duplicate alerts.
+10. Discount fundamental research completes before Green/Amber candidates are included in the digest.
+11. Amber candidates appear after Green candidates with explicit risk labeling.
+12. Red and Grey candidates are never presented as fundamentally cleared.
+13. Owned operating companies outside the top 50 or below $50B receive daily material-risk monitoring.
+14. Material new portfolio risks are deduplicated and included in the portfolio digest.
+15. European EUR equivalents are verified and never replace the screening instrument.
+16. Web Push and Resend email are independently configurable.
+17. Users cannot access other users' protected portfolio/broker data.
+18. Broker linking is only marked successful after real capability checks.
+19. Portfolio and Analytics refresh every five minutes while visible and respect the one-minute manual-refresh cooldown.
+20. Order preparation displays an appropriately labeled IBKR quote and freshness state.
+21. Orders require explicit confirmation and correct contract selection.
+22. Submission timeout recovery cannot blindly duplicate a live order.
+23. Order modifications, partial fills, commissions, and final executions are handled correctly.
+24. Realized P&L includes closed positions; dividends are separated and can be included/excluded from combined results.
+25. No mixed-currency totals are calculated without conversion.
+26. Missing/stale prices and failed research are honestly labeled.
+27. No credentials or private broker details are exposed in the browser.
+28. All builds, type checks, automated tests, and deployable artifacts succeed, with outstanding blockers clearly documented.
+
+---
+
+# PART XVII — IMPLEMENTATION EXECUTION
+
+## 37. Implementation phases
+
+### Phase 1 — Discovery and feasibility
+
+Audit the repository, inspect the Pine Script, verify external APIs and restrictions, and document the architecture and blockers.
+
+### Phase 2 — Data model and indicator engine
+
+Implement:
+
+- Canonical company/security identities.
+- Universe profiles and rankings.
+- Market-data abstraction.
+- Historical data validation.
+- Pine Script reproduction.
+- Threshold calculations and signal state.
+- Scheduled scan and durable execution state.
+
+### Phase 3 — AI and notification pipeline
+
+Implement:
+
+- Source-backed fundamental research.
+- Research classifications and operational risk levels.
+- Material-change detection.
+- Discount/premium/risk signal orchestration.
+- Web Push.
+- Resend.
+- Deduplication, delivery tracking, and retention.
+
+### Phase 4 — Public dashboard and Quotes
+
+Build:
+
+- Today's Overview.
+- Discount cards.
+- Company List and the short summary.
+- Universe selector.
+- Quotes search and interactive chart.
+- Light/dark themes and responsive layouts.
+
+### Phase 5 — Authentication, portfolio, and analytics
+
+Implement:
+
+- Supabase Auth.
+- Google SSO.
+- Profile pages.
+- Verified broker integration.
+- Portfolio table and refresh.
+- Accounting logic and Analytics.
+
+### Phase 6 — Order lifecycle
+
+Implement:
+
+- Contract lookup.
+- Destination selection.
+- Quote display.
+- Commission/total estimation.
+- Confirmation flow.
+- Order placement.
+- Modifications/cancellation.
+- Execution tracking and recovery.
+
+Do not implement real order placement as production-ready until the IBKR feasibility gate has passed.
+
+### Phase 7 — Security and release readiness
+
+Complete:
+
+- RLS and cross-user tests.
+- Secret-handling review.
+- Production/development isolation.
+- Automated and end-to-end tests.
+- Deployment and rollback documentation.
+- Monitoring and operational guidance.
+
+## 38. Required deliverables
+
+For each phase, report:
+
+- Files changed.
+- Database migrations created.
+- Functions and scheduled jobs implemented.
+- Required environment variables and secrets, without exposing their values.
+- Build and test commands run.
+- Actual test results and failures.
+- External setup steps that remain.
+- Known limitations and unresolved blockers.
+- Deployment instructions.
+- Rollback or recovery instructions where relevant.
+
+At completion, provide a practical operator guide explaining how to:
+
+1. Configure and validate the data provider.
+2. Configure Supabase and Cron.
+3. Configure Google SSO.
+4. Configure Web Push and Resend.
+5. Set up and verify IBKR access.
+6. Deploy the web application.
+7. Run a safe manual scan.
+8. Inspect scan coverage and failures.
+9. Review signal history and fundamental reports.
+10. Inspect order status and reconcile analytics.
+
+## 39. Final operating principle
+
+This is a financial research and portfolio-management application, not an autonomous trading bot.
+
+The technical indicator identifies historical price deviations. Fundamental research assesses business quality and risk. IBKR remains the authoritative source for broker account access, order status, executions, and account-specific quotes where its supported interfaces provide those data.
+
+Keep these responsibilities separate.
+
+Be exact about financial calculations, explicit about uncertainty, conservative about security, and honest about operational state.
+
+If a feature cannot be implemented reliably under the approved architecture or available third-party permissions, document the blocker and propose a viable alternative. Never simulate production success.

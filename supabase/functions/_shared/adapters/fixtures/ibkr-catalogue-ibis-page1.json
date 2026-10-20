@@ -1,0 +1,64 @@
+{
+  "_note": "Test fixture. Shape, symbols, conids and ISINs of MSF, APC and SAP come from docs/discovery/research/ibkr-flex-links-ibot.md sections 4 and 6; only the MSF description (MICROSOFT CORP) is verbatim, the other descriptions are reconstructed. The last two rows are SYNTHETIC filter probes (an ETF and a USD-quoted stock), not real products.",
+  "products": [
+    {
+      "type": "STK",
+      "symbol": "MSF",
+      "exchangeId": "IBIS",
+      "localSymbol": "MSF",
+      "description": "MICROSOFT CORP",
+      "conid": 12178239,
+      "isin": "US5949181045",
+      "cusip": "594918104",
+      "currency": "EUR",
+      "country": "DE",
+      "isPrimeExchId": "T"
+    },
+    {
+      "type": "STK",
+      "symbol": "APC",
+      "exchangeId": "IBIS",
+      "localSymbol": "APC",
+      "description": "APPLE INC",
+      "conid": 13013300,
+      "isin": "US0378331005",
+      "currency": "EUR",
+      "country": "DE"
+    },
+    {
+      "type": "STK",
+      "symbol": "SAP",
+      "exchangeId": "IBIS",
+      "localSymbol": "SAP",
+      "description": "SAP SE",
+      "conid": 14204,
+      "isin": "DE0007164600",
+      "currency": "EUR",
+      "country": "DE"
+    },
+    {
+      "type": "ETF",
+      "symbol": "TESTETF",
+      "exchangeId": "IBIS",
+      "localSymbol": "TESTETF",
+      "description": "SYNTHETIC ETF ROW (TEST ONLY)",
+      "conid": 900000001,
+      "isin": null,
+      "currency": "EUR",
+      "country": "DE"
+    },
+    {
+      "type": "STK",
+      "symbol": "TESTUSD",
+      "exchangeId": "IBIS",
+      "localSymbol": "TESTUSD",
+      "description": "SYNTHETIC USD STOCK ROW (TEST ONLY)",
+      "conid": 900000002,
+      "isin": null,
+      "currency": "USD",
+      "country": "DE"
+    }
+  ],
+  "productTypeCount": [{ "productType": "STK", "count": 4 }, { "productType": "ETF", "count": 1 }],
+  "productCount": 5
+}

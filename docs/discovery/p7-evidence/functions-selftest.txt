@@ -1,0 +1,8 @@
+$ bun run functions:selftest
+exit code: 0
+duration: 4.8 s
+finished: 2026-10-16T13:49:20.830Z
+--- last 120 lines ---
+functions:check self-test: OK (broken adapter, core and function files are all rejected)
+$ bun run tools/functions-check-selftest.ts
+

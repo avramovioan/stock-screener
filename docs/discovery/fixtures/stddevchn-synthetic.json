@@ -1,0 +1,686 @@
+[
+  {
+    "id": "F1",
+    "description": "length=5, strictly increasing linear closes; zero residuals expected; rising",
+    "length": 5,
+    "inputs": {
+      "close": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "high": [
+        10.5,
+        11.5,
+        12.5,
+        13.5,
+        14.5
+      ],
+      "low": [
+        9.5,
+        10.5,
+        11.5,
+        12.5,
+        13.5
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": -1,
+      "average": 12,
+      "intercept": 14,
+      "stPrice": 10,
+      "endPrice": 14,
+      "stdDev": 0,
+      "pearsonR": 1,
+      "upDev": 0.5,
+      "dnDev": 0.5,
+      "lines": {
+        "base": {
+          "start": 10,
+          "end": 14
+        },
+        "upper1": {
+          "start": 10,
+          "end": 14
+        },
+        "upper2": {
+          "start": 10,
+          "end": 14,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 10,
+          "end": 14
+        },
+        "lower2": {
+          "start": 10,
+          "end": 14,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": true,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F2",
+    "description": "length=5, strictly decreasing linear closes; falling",
+    "length": 5,
+    "inputs": {
+      "close": [
+        14,
+        13,
+        12,
+        11,
+        10
+      ],
+      "high": [
+        14.5,
+        13.5,
+        12.5,
+        11.5,
+        10.5
+      ],
+      "low": [
+        13.5,
+        12.5,
+        11.5,
+        10.5,
+        9.5
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": 1,
+      "average": 12,
+      "intercept": 10,
+      "stPrice": 14,
+      "endPrice": 10,
+      "stdDev": 0,
+      "pearsonR": 1,
+      "upDev": 0.5,
+      "dnDev": 0.5,
+      "lines": {
+        "base": {
+          "start": 14,
+          "end": 10
+        },
+        "upper1": {
+          "start": 14,
+          "end": 10
+        },
+        "upper2": {
+          "start": 14,
+          "end": 10,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 14,
+          "end": 10
+        },
+        "lower2": {
+          "start": 14,
+          "end": 10,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": false,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F3",
+    "description": "length=5, constant closes; flat, sd=0",
+    "length": 5,
+    "inputs": {
+      "close": [
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "high": [
+        12.5,
+        12.5,
+        12.5,
+        12.5,
+        12.5
+      ],
+      "low": [
+        11.5,
+        11.5,
+        11.5,
+        11.5,
+        11.5
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": 0,
+      "average": 12,
+      "intercept": 12,
+      "stPrice": 12,
+      "endPrice": 12,
+      "stdDev": 0,
+      "pearsonR": 0,
+      "upDev": 0.5,
+      "dnDev": 0.5,
+      "lines": {
+        "base": {
+          "start": 12,
+          "end": 12
+        },
+        "upper1": {
+          "start": 12,
+          "end": 12
+        },
+        "upper2": {
+          "start": 12,
+          "end": 12,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 12,
+          "end": 12
+        },
+        "lower2": {
+          "start": 12,
+          "end": 12,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": false,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F4",
+    "description": "length=8, noisy increasing closes, all four modes true (SD multipliers 1/2/3/4)",
+    "length": 8,
+    "inputs": {
+      "close": [
+        100,
+        101.2,
+        100.9,
+        102.5,
+        103.1,
+        102.8,
+        104.6,
+        105.2
+      ],
+      "high": [
+        100.8,
+        101.8,
+        101.8,
+        103.2,
+        104.2,
+        103.3,
+        105.4,
+        105.8
+      ],
+      "low": [
+        99.3,
+        100.3,
+        100.4,
+        101.5,
+        102.5,
+        102,
+        103.9,
+        104.3
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": -0.7107142857142944,
+      "average": 102.53750000000001,
+      "intercept": 105.02500000000005,
+      "stPrice": 100.04999999999998,
+      "endPrice": 105.02500000000005,
+      "stdDev": 0.45101925385391056,
+      "pearsonR": 0.9680403688657844,
+      "upDev": 1.3071428571428214,
+      "dnDev": 1.6035714285714704,
+      "lines": {
+        "base": {
+          "start": 100.04999999999998,
+          "end": 105.02500000000005
+        },
+        "upper1": {
+          "start": 100.5010192538539,
+          "end": 105.47601925385396
+        },
+        "upper2": {
+          "start": 100.9520385077078,
+          "end": 105.92703850770786,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 98.69694223843825,
+          "end": 103.67194223843832
+        },
+        "lower2": {
+          "start": 98.24592298458434,
+          "end": 103.2209229845844,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": true,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F5",
+    "description": "same data as F4, all four modes false (max high/low deviation mode)",
+    "length": 8,
+    "inputs": {
+      "close": [
+        100,
+        101.2,
+        100.9,
+        102.5,
+        103.1,
+        102.8,
+        104.6,
+        105.2
+      ],
+      "high": [
+        100.8,
+        101.8,
+        101.8,
+        103.2,
+        104.2,
+        103.3,
+        105.4,
+        105.8
+      ],
+      "low": [
+        99.3,
+        100.3,
+        100.4,
+        101.5,
+        102.5,
+        102,
+        103.9,
+        104.3
+      ]
+    },
+    "settings": {
+      "upper1Mode": false,
+      "upper1Mult": 1,
+      "upper2Mode": false,
+      "upper2Mult": 2,
+      "lower1Mode": false,
+      "lower1Mag": 3,
+      "lower2Mode": false,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": -0.7107142857142944,
+      "average": 102.53750000000001,
+      "intercept": 105.02500000000005,
+      "stPrice": 100.04999999999998,
+      "endPrice": 105.02500000000005,
+      "stdDev": 0.45101925385391056,
+      "pearsonR": 0.9680403688657844,
+      "upDev": 1.3071428571428214,
+      "dnDev": 1.6035714285714704,
+      "lines": {
+        "base": {
+          "start": 100.04999999999998,
+          "end": 105.02500000000005
+        },
+        "upper1": {
+          "start": 101.3571428571428,
+          "end": 106.33214285714287
+        },
+        "upper2": {
+          "start": 101.3571428571428,
+          "end": 106.33214285714287,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 98.44642857142851,
+          "end": 103.42142857142858
+        },
+        "lower2": {
+          "start": 98.44642857142851,
+          "end": 103.42142857142858,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": true,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F6",
+    "description": "length=8, small-price high-noise closes rising, so lower -4 line end <= 0 (zero-level filter)",
+    "length": 8,
+    "inputs": {
+      "close": [
+        1,
+        3,
+        0.8,
+        3.5,
+        1.5,
+        3.2,
+        1.2,
+        3.9
+      ],
+      "high": [
+        1.3,
+        3.3,
+        1.1,
+        3.8,
+        1.8,
+        3.5,
+        1.5,
+        4.2
+      ],
+      "low": [
+        0.7,
+        2.7,
+        0.5,
+        3.2,
+        1.2,
+        2.9,
+        0.9,
+        3.6
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": -0.19642857142857142,
+      "average": 2.2625,
+      "intercept": 2.9499999999999997,
+      "stPrice": 1.5749999999999997,
+      "endPrice": 2.9499999999999997,
+      "stdDev": 1.1623998749947262,
+      "pearsonR": 0.3824581519642386,
+      "upDev": 1.6357142857142866,
+      "dnDev": 1.8535714285714282,
+      "lines": {
+        "base": {
+          "start": 1.5749999999999997,
+          "end": 2.9499999999999997
+        },
+        "upper1": {
+          "start": 2.737399874994726,
+          "end": 4.1123998749947255
+        },
+        "upper2": {
+          "start": 3.899799749989452,
+          "end": 5.274799749989452,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": -1.9121996249841788,
+          "end": -0.5371996249841788
+        },
+        "lower2": {
+          "start": -3.074599499978905,
+          "end": -1.699599499978905,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": true,
+      "lower2EndAboveZero": false
+    }
+  },
+  {
+    "id": "F7",
+    "description": "12 bars, length=8: 4 distractor bars prepended to F4; result must equal F4",
+    "length": 8,
+    "inputs": {
+      "close": [
+        500,
+        1,
+        900,
+        3,
+        100,
+        101.2,
+        100.9,
+        102.5,
+        103.1,
+        102.8,
+        104.6,
+        105.2
+      ],
+      "high": [
+        501,
+        2,
+        901,
+        4,
+        100.8,
+        101.8,
+        101.8,
+        103.2,
+        104.2,
+        103.3,
+        105.4,
+        105.8
+      ],
+      "low": [
+        499,
+        0,
+        899,
+        2,
+        99.3,
+        100.3,
+        100.4,
+        101.5,
+        102.5,
+        102,
+        103.9,
+        104.3
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": -0.7107142857142944,
+      "average": 102.53750000000001,
+      "intercept": 105.02500000000005,
+      "stPrice": 100.04999999999998,
+      "endPrice": 105.02500000000005,
+      "stdDev": 0.45101925385391056,
+      "pearsonR": 0.9680403688657844,
+      "upDev": 1.3071428571428214,
+      "dnDev": 1.6035714285714704,
+      "lines": {
+        "base": {
+          "start": 100.04999999999998,
+          "end": 105.02500000000005
+        },
+        "upper1": {
+          "start": 100.5010192538539,
+          "end": 105.47601925385396
+        },
+        "upper2": {
+          "start": 100.9520385077078,
+          "end": 105.92703850770786,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 98.69694223843825,
+          "end": 103.67194223843832
+        },
+        "lower2": {
+          "start": 98.24592298458434,
+          "end": 103.2209229845844,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": true,
+      "lower2EndAboveZero": true
+    }
+  },
+  {
+    "id": "F8",
+    "description": "insufficient data: 4 bars with length=5 -> all na (expected null)",
+    "length": 5,
+    "inputs": {
+      "close": [
+        10,
+        11,
+        12,
+        13
+      ],
+      "high": [
+        10.5,
+        11.5,
+        12.5,
+        13.5
+      ],
+      "low": [
+        9.5,
+        10.5,
+        11.5,
+        12.5
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": null
+  },
+  {
+    "id": "F9",
+    "description": "length=5, constant 123.456 (non-integer): rounding may give tiny nonzero slope; trend rule needs epsilon",
+    "length": 5,
+    "inputs": {
+      "close": [
+        123.456,
+        123.456,
+        123.456,
+        123.456,
+        123.456
+      ],
+      "high": [
+        123.956,
+        123.956,
+        123.956,
+        123.956,
+        123.956
+      ],
+      "low": [
+        122.956,
+        122.956,
+        122.956,
+        122.956,
+        122.956
+      ]
+    },
+    "settings": {
+      "upper1Mode": true,
+      "upper1Mult": 1,
+      "upper2Mode": true,
+      "upper2Mult": 2,
+      "lower1Mode": true,
+      "lower1Mag": 3,
+      "lower2Mode": true,
+      "lower2Mag": 4
+    },
+    "expected": {
+      "slope": 0,
+      "average": 123.45599999999999,
+      "intercept": 123.45599999999999,
+      "stPrice": 123.45599999999999,
+      "endPrice": 123.45599999999999,
+      "stdDev": 1.5888218580782548e-14,
+      "pearsonR": 0,
+      "upDev": 0.5000000000000142,
+      "dnDev": 0.4999999999999858,
+      "lines": {
+        "base": {
+          "start": 123.45599999999999,
+          "end": 123.45599999999999
+        },
+        "upper1": {
+          "start": 123.456,
+          "end": 123.456
+        },
+        "upper2": {
+          "start": 123.45600000000002,
+          "end": 123.45600000000002,
+          "startBarOffsetFromWindowStart": 1
+        },
+        "lower1": {
+          "start": 123.45599999999995,
+          "end": 123.45599999999995
+        },
+        "lower2": {
+          "start": 123.45599999999993,
+          "end": 123.45599999999993,
+          "startBarOffsetFromWindowStart": 1
+        }
+      },
+      "risingChannel": false,
+      "lower2EndAboveZero": true
+    }
+  }
+]

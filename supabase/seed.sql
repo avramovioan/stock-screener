@@ -1,0 +1,2 @@
+-- Seed data (exchanges, app_settings defaults, mapping tables) arrives with the phase that creates
+-- those tables (P1). Intentionally empty in P0.

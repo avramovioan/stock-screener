@@ -1,0 +1,8 @@
+$ bun run check:functions-config
+exit code: 0
+duration: 0.9 s
+finished: 2026-10-16T13:48:40.779Z
+--- last 120 lines ---
+functions config: OK (broker-sync, health, notify-dispatch, notify-unsubscribe, portfolio-refresh, push-subscribe, quotes, resend-webhook, retention-cleanup, scan-control, worker-tick)
+$ bun run tools/check-functions-config.ts
+

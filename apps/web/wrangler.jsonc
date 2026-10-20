@@ -1,0 +1,15 @@
+{
+  "name": "stock-screener",
+  "compatibility_date": "2026-10-15",
+  // Serve the site on https://stock-screener.<your-subdomain>.workers.dev (free, always on).
+  "workers_dev": true,
+  // No per-version preview URLs: they would be extra public addresses that the auth and CORS allow-lists do not know.
+  "preview_urls": false,
+  // Optional custom domain (the zone must be on this Cloudflare account):
+  // "routes": [{ "pattern": "screener.<your-domain>", "custom_domain": true }],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash"
+  }
+}

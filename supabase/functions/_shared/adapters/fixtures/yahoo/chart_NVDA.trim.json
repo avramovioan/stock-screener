@@ -1,0 +1,142 @@
+{
+  "meta": {
+    "currency": "USD",
+    "symbol": "NVDA",
+    "exchangeName": "NMS",
+    "fullExchangeName": "NasdaqGS",
+    "instrumentType": "EQUITY",
+    "firstTradeDate": "1999-01-22T14:30:00.000Z",
+    "regularMarketTime": "2026-10-14T20:00:00.000Z",
+    "hasPrePostMarketData": true,
+    "gmtoffset": -14400,
+    "timezone": "EDT",
+    "exchangeTimezoneName": "America/New_York",
+    "regularMarketPrice": 221.3,
+    "regularMarketChangePercent": -3.159,
+    "fulldayPrice": 218.26,
+    "fulldayChange": -9.565,
+    "fulldayChangePercent": -4.186,
+    "fiftyTwoWeekHigh": 243.37,
+    "fiftyTwoWeekLow": 164.27,
+    "regularMarketDayHigh": 226,
+    "regularMarketDayLow": 219.64,
+    "regularMarketVolume": 117762243,
+    "longName": "NVIDIA Corporation",
+    "shortName": "NVIDIA Corporation",
+    "chartPreviousClose": 0.4,
+    "priceHint": 2,
+    "currentTradingPeriod": {
+      "pre": {
+        "timezone": "EDT",
+        "end": "2026-10-15T13:30:00.000Z",
+        "start": "2026-10-15T08:00:00.000Z",
+        "gmtoffset": -14400
+      },
+      "regular": {
+        "timezone": "EDT",
+        "end": "2026-10-15T20:00:00.000Z",
+        "start": "2026-10-15T13:30:00.000Z",
+        "gmtoffset": -14400
+      },
+      "post": {
+        "timezone": "EDT",
+        "end": "2026-10-16T00:00:00.000Z",
+        "start": "2026-10-15T20:00:00.000Z",
+        "gmtoffset": -14400
+      }
+    },
+    "dataGranularity": "1d",
+    "range": "",
+    "validRanges": ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+  },
+  "quotes": [
+    {
+      "date": "2024-06-03T13:30:00.000Z",
+      "high": 115,
+      "volume": 438392000,
+      "open": 113.62100219726562,
+      "low": 112.00299835205078,
+      "close": 115,
+      "adjclose": 114.67302703857422
+    },
+    {
+      "date": "2024-06-04T13:30:00.000Z",
+      "high": 116.5999984741211,
+      "volume": 403324000,
+      "open": 115.71600341796875,
+      "low": 114.04499816894531,
+      "close": 116.43699645996094,
+      "adjclose": 116.1059341430664
+    },
+    {
+      "date": "2024-06-05T13:30:00.000Z",
+      "high": 122.4489974975586,
+      "volume": 528402000,
+      "open": 118.37100219726562,
+      "low": 117.46800231933594,
+      "close": 122.44000244140625,
+      "adjclose": 122.09187316894531
+    },
+    {
+      "date": "2024-06-06T13:30:00.000Z",
+      "high": 125.58699798583984,
+      "volume": 664696000,
+      "open": 124.0479965209961,
+      "low": 118.31999969482422,
+      "close": 120.99800109863281,
+      "adjclose": 120.65396881103516
+    },
+    {
+      "date": "2024-06-07T13:30:00.000Z",
+      "high": 121.69200134277344,
+      "volume": 412386000,
+      "open": 119.7699966430664,
+      "low": 118.02200317382812,
+      "close": 120.88800048828125,
+      "adjclose": 120.54428100585938
+    },
+    {
+      "date": "2024-06-10T13:30:00.000Z",
+      "high": 123.0999984741211,
+      "volume": 313434100,
+      "open": 120.37000274658203,
+      "low": 117.01000213623047,
+      "close": 121.79000091552734,
+      "adjclose": 121.4437255859375
+    },
+    {
+      "date": "2024-06-11T13:30:00.000Z",
+      "high": 122.87000274658203,
+      "volume": 222551200,
+      "open": 121.7699966430664,
+      "low": 118.73999786376953,
+      "close": 120.91000366210938,
+      "adjclose": 120.57611846923828
+    },
+    {
+      "date": "2024-06-12T13:30:00.000Z",
+      "high": 126.87999725341797,
+      "volume": 299595000,
+      "open": 123.05999755859375,
+      "low": 122.56999969482422,
+      "close": 125.19999694824219,
+      "adjclose": 124.8542709350586
+    }
+  ],
+  "events": {
+    "splits": [
+      {
+        "date": "2021-07-20T13:30:00.000Z",
+        "numerator": 4,
+        "denominator": 1,
+        "splitRatio": "4:1"
+      },
+      {
+        "date": "2024-06-10T13:30:00.000Z",
+        "numerator": 10,
+        "denominator": 1,
+        "splitRatio": "10:1"
+      }
+    ]
+  }
+}

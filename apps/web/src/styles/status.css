@@ -1,0 +1,168 @@
+/* Status tokens (light and dark). Text on its own background targets WCAG AA 4.5:1.
+   Meaning is never carried by colour alone: every use pairs these with an icon and a text label. */
+:root {
+  --status-green-bg: #e6f4ea;
+  --status-green-fg: #14532d;
+  --status-green-bd: #15803d;
+  --status-amber-bg: #fff3d6;
+  --status-amber-fg: #6b4200;
+  --status-amber-bd: #b45309;
+  --status-red-bg: #fde8e8;
+  --status-red-fg: #7f1d1d;
+  --status-red-bd: #b91c1c;
+  --status-grey-bg: #eceff3;
+  --status-grey-fg: #3a4250;
+  --status-grey-bd: #5b6472;
+  --status-pending-bg: #e6edfc;
+  --status-pending-fg: #1e3a8a;
+  --status-pending-bd: #2563eb;
+  --status-premium-bg: #fff8d6;
+  --status-premium-fg: #5c4600;
+  --status-premium-bd: #a16207;
+  --status-extra-bg: #ffe9d6;
+  --status-extra-fg: #7c2d12;
+  --status-extra-bd: #c2410c;
+  --move-up: #166534;
+  --move-down: #b91c1c;
+  --top10-bg: rgb(21 128 61 / 0.07);
+}
+:root.dark {
+  --status-green-bg: #12301d;
+  --status-green-fg: #b7efc8;
+  --status-green-bd: #4ade80;
+  --status-amber-bg: #3a2a08;
+  --status-amber-fg: #fde7a8;
+  --status-amber-bd: #fbbf24;
+  --status-red-bg: #3b1414;
+  --status-red-fg: #fecaca;
+  --status-red-bd: #f87171;
+  --status-grey-bg: #262b33;
+  --status-grey-fg: #d5dae2;
+  --status-grey-bd: #9aa3b2;
+  --status-pending-bg: #16264a;
+  --status-pending-fg: #c7d7fe;
+  --status-pending-bd: #60a5fa;
+  --status-premium-bg: #38300a;
+  --status-premium-fg: #fdf0a6;
+  --status-premium-bd: #facc15;
+  --status-extra-bg: #3d1f0d;
+  --status-extra-fg: #fed7aa;
+  --status-extra-bd: #fb923c;
+  --move-up: #4ade80;
+  --move-down: #f87171;
+  --top10-bg: rgb(74 222 128 / 0.09);
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid var(--tone-bd); /* visible border survives forced-colours mode */
+  background: var(--tone-bg);
+  color: var(--tone-fg);
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+.status-tag[data-tone="green"] {
+  --tone-bg: var(--status-green-bg);
+  --tone-fg: var(--status-green-fg);
+  --tone-bd: var(--status-green-bd);
+}
+.status-tag[data-tone="amber"] {
+  --tone-bg: var(--status-amber-bg);
+  --tone-fg: var(--status-amber-fg);
+  --tone-bd: var(--status-amber-bd);
+}
+.status-tag[data-tone="red"] {
+  --tone-bg: var(--status-red-bg);
+  --tone-fg: var(--status-red-fg);
+  --tone-bd: var(--status-red-bd);
+}
+.status-tag[data-tone="grey"] {
+  --tone-bg: var(--status-grey-bg);
+  --tone-fg: var(--status-grey-fg);
+  --tone-bd: var(--status-grey-bd);
+}
+.status-tag[data-tone="pending"] {
+  --tone-bg: var(--status-pending-bg);
+  --tone-fg: var(--status-pending-fg);
+  --tone-bd: var(--status-pending-bd);
+}
+.status-tag[data-tone="premium"] {
+  --tone-bg: var(--status-premium-bg);
+  --tone-fg: var(--status-premium-fg);
+  --tone-bd: var(--status-premium-bd);
+}
+.status-tag[data-tone="extra"] {
+  --tone-bg: var(--status-extra-bg);
+  --tone-fg: var(--status-extra-fg);
+  --tone-bd: var(--status-extra-bd);
+}
+.status-tag[data-tone="consider"] {
+  --tone-bg: var(--accent);
+  --tone-fg: var(--accent-foreground);
+  --tone-bd: var(--primary);
+}
+
+.move-up {
+  color: var(--move-up);
+}
+.move-down {
+  color: var(--move-down);
+}
+.row-top10 {
+  background: var(--top10-bg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none !important;
+  }
+}
+
+/* Scan with AI, running: a pulsing dot and an indeterminate bar (the real duration is unknown). */
+.scan-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: scan-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.scan-bar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--primary);
+  animation: scan-slide 1.6s ease-in-out infinite;
+}
+@keyframes scan-ping {
+  75%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes scan-slide {
+  to {
+    left: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-dot::after {
+    animation: none;
+    display: none;
+  }
+  .scan-bar::after {
+    animation: none;
+    left: 0;
+    width: 100%;
+    opacity: 0.35;
+  }
+}

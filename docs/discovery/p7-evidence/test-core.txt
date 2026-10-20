@@ -1,0 +1,16 @@
+$ bun run test:core
+exit code: 0
+duration: 9.3 s
+finished: 2026-10-16T13:47:26.340Z
+--- last 120 lines ---
+
+ RUN  v5.0.4 C:/Data/git_repos/_tests/nira/personal-stock-screener
+
+
+ Test Files  21 passed (21)
+      Tests  470 passed (470)
+   Start at  16:47:18
+   Duration  7.65s (transform 59%, import 18%, tests 18%, worker 5%)
+
+$ vitest run --project core
+

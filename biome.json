@@ -1,0 +1,51 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/dev-dist",
+      "!**/node_modules",
+      "!**/coverage",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!**/.wrangler",
+      "!docs",
+      "!supabase/.temp",
+      "!supabase/.branches",
+      "!bun.lock",
+      "!apps/web/src/routeTree.gen.ts",
+      "!apps/web/src/lib/database.types.ts",
+      "!apps/web/src/components/ui",
+      "!supabase/functions/_shared/adapters/fixtures"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "javascript": {
+    "formatter": { "quoteStyle": "double", "semicolons": "always", "trailingCommas": "all" }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": { "noExplicitAny": "error" },
+      "style": { "noNonNullAssertion": "warn", "useImportType": "error" }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["supabase/functions/_shared/core/indicator.ts"],
+      "linter": { "rules": { "complexity": { "useLiteralKeys": "off" } } }
+    }
+  ],
+  "assist": { "enabled": true, "actions": { "source": { "organizeImports": "on" } } }
+}

@@ -1,0 +1,107 @@
+$ bun run test:e2e
+exit code: 0
+duration: 52.1 s
+finished: 2026-10-16T13:51:14.815Z
+--- last 120 lines ---
+@screener/web build: vite v8.3.4 building client environment for production...
+@screener/web build: transforming...
+@screener/web build: ✓ 2699 modules transformed.
+@screener/web build: rendering chunks...
+@screener/web build: computing gzip size...
+@screener/web build: dist/index.html                                                1.06 kB │ gzip:   0.52 kB
+@screener/web build: dist/assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2     22.58 kB
+@screener/web build: dist/assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2     24.18 kB
+@screener/web build: dist/assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2     24.25 kB
+@screener/web build: dist/assets/index-Dlk3rrhg.css                                69.82 kB │ gzip:  12.65 kB
+@screener/web build: dist/assets/sw-messages-B4tcRBpC.js                            0.22 kB │ gzip:   0.19 kB
+@screener/web build: dist/assets/workbox-window.prod.es5-Bd17z0YL.js                5.65 kB │ gzip:   2.20 kB
+@screener/web build: dist/assets/index-DFgoDJ3-.js                              1,360.50 kB │ gzip: 409.79 kB
+@screener/web build: 
+@screener/web build: [plugin builtin:vite-reporter] 
+@screener/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+@screener/web build: - Using dynamic import() to code-split the application
+@screener/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+@screener/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+@screener/web build: [INEFFECTIVE_DYNAMIC_IMPORT] src/lib/supabase.ts is dynamically imported by src/features/notifications/session-reconcile.tsx, src/features/profile/panels/notifications-panel.tsx, src/register-sw.ts but also statically imported by src/features/analytics/default.ts, src/features/auth/default.ts, src/features/broker/default.ts, src/features/handoff/default.ts, src/features/overview/viewer.ts, ..., dynamic import will not move module into another chunk.
+@screener/web build: 
+@screener/web build: [INEFFECTIVE_DYNAMIC_IMPORT] src/features/notifications/notifications-api.ts is dynamically imported by src/features/notifications/session-reconcile.tsx, src/register-sw.ts but also statically imported by src/features/profile/panels/notifications-panel.tsx, dynamic import will not move module into another chunk.
+@screener/web build: 
+@screener/web build: ✓ built in 903ms
+@screener/web build: 
+@screener/web build: PWA v2.0.0
+@screener/web build: Building src/sw.ts service worker ("es" format)...
+@screener/web build: vite v8.3.4 building client environment for production...
+@screener/web build: 
+@screener/web build:  WARN  inlineDynamicImports option is deprecated, please use codeSplitting: false instead.
+@screener/web build: 
+@screener/web build: transforming...
+@screener/web build: ✓ 84 modules transformed.
+@screener/web build: rendering chunks...
+@screener/web build: computing gzip size...
+@screener/web build: dist/sw.mjs  19.32 kB │ gzip: 6.68 kB
+@screener/web build: 
+@screener/web build: ✓ built in 60ms
+@screener/web build: 
+@screener/web build: PWA v2.0.0
+@screener/web build: mode      injectManifest
+@screener/web build: format:   es
+@screener/web build: precache  16 entries (1510.39 KiB)
+@screener/web build: files generated
+@screener/web build:   dist/sw.js
+@screener/web build: Exited with code 0
+render:headers: connect-src origin https://csp-e2e.supabase.co
+bundle secret scan: OK (11 files)
+check:headers: OK (rendered, origin https://csp-e2e.supabase.co)
+@screener/web e2e: [WebServer] $ vite preview --port 4173 --strictPort
+@screener/web e2e: 
+@screener/web e2e: Running 40 tests using 10 workers
+@screener/web e2e: 
+@screener/web e2e:   ✓   2 [chromium] › e2e\a11y.spec.ts:16:5 › axe (light): About has no serious or critical violations (11.4s)
+@screener/web e2e:   ✓   4 [chromium] › e2e\a11y.spec.ts:16:5 › axe (light): Quotes has no serious or critical violations (11.4s)
+@screener/web e2e:   ✓   1 [chromium] › e2e\a11y.spec.ts:16:5 › axe (dark): Overview has no serious or critical violations (13.5s)
+@screener/web e2e:   ✓   8 [chromium] › e2e\a11y.spec.ts:16:5 › axe (dark): Quotes has no serious or critical violations (12.1s)
+@screener/web e2e:   ✓   6 [chromium] › e2e\a11y.spec.ts:16:5 › axe (dark): About has no serious or critical violations (12.5s)
+@screener/web e2e:   ✓   3 [chromium] › e2e\a11y.spec.ts:16:5 › axe (light): Overview has no serious or critical violations (13.9s)
+@screener/web e2e:   ✓   9 [chromium] › e2e\a11y.spec.ts:44:7 › axe (light, 1280px): Overview /?country=us has no serious or critical violations (13.6s)
+@screener/web e2e:   ✓   5 [chromium] › e2e\a11y.spec.ts:44:7 › axe (light, 360px): Overview /?country=us has no serious or critical violations (14.4s)
+@screener/web e2e:   ✓   7 [chromium] › e2e\a11y.spec.ts:44:7 › axe (light, 360px): Overview / has no serious or critical violations (14.8s)
+@screener/web e2e:   ✓  10 [chromium] › e2e\a11y.spec.ts:44:7 › axe (light, 1280px): Overview / has no serious or critical violations (14.1s)
+@screener/web e2e:   ✓  15 [chromium] › e2e\country-filter.spec.ts:21:1 › everyone reads the one worldwide ranking: Companies from defaults to All countries and ?mode= is ignored (3.4s)
+@screener/web e2e:   ✓  16 [chromium] › e2e\country-filter.spec.ts:36:1 › choosing United States filters the cards and the list, and keeps ?country=us in the URL (3.8s)
+@screener/web e2e:   ✓  17 [chromium] › e2e\country-filter.spec.ts:62:1 › a ?country=us link opens on the United States view (3.1s)
+@screener/web e2e:   ✓  12 [chromium] › e2e\a11y.spec.ts:44:7 › axe (dark, 360px): Overview /?country=us has no serious or critical violations (7.7s)
+@screener/web e2e:   ✓  18 [chromium] › e2e\country-filter.spec.ts:74:1 › the control is the same for a signed-in user: no Profile link and no Preferences tab (3.4s)
+@screener/web e2e:   ✓  11 [chromium] › e2e\a11y.spec.ts:44:7 › axe (dark, 360px): Overview / has no serious or critical violations (8.1s)
+@screener/web e2e:   ✓  14 [chromium] › e2e\a11y.spec.ts:44:7 › axe (dark, 1280px): Overview /?country=us has no serious or critical violations (7.6s)
+@screener/web e2e:   ✓  13 [chromium] › e2e\a11y.spec.ts:44:7 › axe (dark, 1280px): Overview / has no serious or critical violations (8.0s)
+@screener/web e2e:   ✓  19 [chromium] › e2e\csp.spec.ts:25:5 › without the service worker › no CSP violation and enforced headers on / (5.5s)
+@screener/web e2e:   ✓  20 [chromium] › e2e\csp.spec.ts:25:5 › without the service worker › no CSP violation and enforced headers on /quotes?symbol=MSFT (5.4s)
+@screener/web e2e:   ✓  21 [chromium] › e2e\csp.spec.ts:25:5 › without the service worker › no CSP violation and enforced headers on /about (5.2s)
+@screener/web e2e:   ✓  22 [chromium] › e2e\csp.spec.ts:25:5 › without the service worker › no CSP violation and enforced headers on /auth/sign-in (5.1s)
+@screener/web e2e:   ✓  23 [chromium] › e2e\csp.spec.ts:25:5 › without the service worker › no CSP violation and enforced headers on /auth/sign-up (4.9s)
+@screener/web e2e:   ✓  24 [chromium] › e2e\csp.spec.ts:42:3 › without the service worker › an injected inline script is blocked (4.4s)
+@screener/web e2e:   ✓  25 [chromium] › e2e\csp.spec.ts:56:3 › without the service worker › a connection to another origin is blocked (4.4s)
+@screener/web e2e:   ✓  28 [chromium] › e2e\keyboard.spec.ts:37:1 › Quotes: range buttons move with arrow keys and the selector is a labelled control (2.8s)
+@screener/web e2e:   ✓  26 [chromium] › e2e\csp.spec.ts:73:3 › with the service worker › the worker registers under the policy without violations (4.7s)
+@screener/web e2e:   ✓  29 [chromium] › e2e\keyboard.spec.ts:50:1 › Escape closes the short-summary popover and returns focus to its button (2.7s)
+@screener/web e2e:   ✓  38 [chromium] › e2e\smoke.spec.ts:18:1 › manifest and service worker are served from the site root (93ms)
+@screener/web e2e:   ✓  27 [chromium] › e2e\keyboard.spec.ts:18:1 › Overview: every main control is reachable by Tab and shows a focus ring (3.8s)
+@screener/web e2e:   ✓  31 [chromium] › e2e\responsive.spec.ts:21:3 › 360 px wide › the company list is stacked cards with every field, and Load more still works (2.7s)
+@screener/web e2e:   ✓  32 [chromium] › e2e\responsive.spec.ts:35:3 › 360 px wide › the chart fits the viewport (2.8s)
+@screener/web e2e:   ✓  33 [chromium] › e2e\responsive.spec.ts:48:3 › 1280 px wide › the company list is a real table with 15 rows, then 40 after Load more (2.9s)
+@screener/web e2e:   ✓  34 [chromium] › e2e\responsive.spec.ts:64:3 › 1280 px wide › top ten rows are marked, cards are ordered cleared, caution, pending, the red result is in the Flagged group (2.7s)
+@screener/web e2e:   ✓  37 [chromium] › e2e\smoke.spec.ts:13:1 › a deep link falls back to the SPA shell (2.5s)
+@screener/web e2e:   ✓  36 [chromium] › e2e\smoke.spec.ts:3:1 › home page renders the shell and the primary navigation (2.6s)
+@screener/web e2e:   ✓  30 [chromium] › e2e\responsive.spec.ts:12:3 › 360 px wide › no horizontal page scroll on any public page (4.5s)
+@screener/web e2e:   ✓  35 [chromium] › e2e\responsive.spec.ts:85:3 › 1280 px wide › no horizontal page scroll (3.1s)
+@screener/web e2e:   ✓  39 [chromium] › e2e\smoke.spec.ts:27:1 › the service worker registers with scope / (2.6s)
+@screener/web e2e:   ✓  40 [chromium] › e2e\smoke.spec.ts:33:1 › the theme choice persists after a reload (2.8s)
+@screener/web e2e: 
+@screener/web e2e:   40 passed (41.1s)
+@screener/web e2e: Exited with code 0
+$ VITE_SUPABASE_URL=https://csp-e2e.supabase.co VITE_SUPABASE_ANON_KEY=csp-e2e-anon VITE_SITE_URL=https://csp-e2e.example.com bun run build && bun run --filter @screener/web e2e
+$ bun run --filter @screener/web build && bun run render:headers && bun run check:bundle && bun run check:headers
+$ bun run tools/render-headers.ts
+$ bun run tools/check-bundle-secrets.ts
+$ bun run tools/check-headers.ts
+

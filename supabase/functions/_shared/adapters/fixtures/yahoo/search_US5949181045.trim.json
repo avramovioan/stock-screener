@@ -1,0 +1,40 @@
+{
+  "quotes": [
+    {
+      "exchange": "NMS",
+      "shortname": "Microsoft Corporation",
+      "quoteType": "EQUITY",
+      "symbol": "MSFT",
+      "index": "quotes",
+      "score": 361340,
+      "typeDisp": "Equity",
+      "longname": "Microsoft Corporation",
+      "exchDisp": "NASDAQ",
+      "sector": "Technology",
+      "sectorDisp": "Technology",
+      "industry": "Software—Infrastructure",
+      "industryDisp": "Software—Infrastructure",
+      "isYahooFinance": true
+    }
+  ],
+  "news": [
+    {
+      "uuid": "8775f880-6394-33df-b7c2-01277d94051a",
+      "title": "Will Yum! Brands' (YUM) AI-Driven Operations and Supplier Strategy Shift Its Post-Pizza Hut Narrative?",
+      "publisher": "Simply Wall St.",
+      "link": "https://finance.yahoo.com/technology/ai/articles/yum-brands-yum-ai-driven-071816930.html",
+      "providerPublishTime": "2026-10-15T07:18:16.000Z",
+      "type": "STORY",
+      "relatedTickers": ["YUM", "NVDA", "MSFT"]
+    },
+    {
+      "uuid": "1e07538c-4d5d-3889-968c-8b9d3cda6b7a",
+      "title": "Will OpenAI Go Public? One VC Says ‘Not Really Sure They Mean It’ But Bets On ‘Blockbuster’ Anthropic Listing",
+      "publisher": "Stocktwits",
+      "link": "https://finance.yahoo.com/technology/ai/articles/openai-public-one-vc-says-050149266.html",
+      "providerPublishTime": "2026-10-15T05:01:49.000Z",
+      "type": "STORY",
+      "relatedTickers": ["OPAI.PVT", "ANTH.PVT", "MSFT", "AMZN", "GOOG", "ORCL"]
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../assets/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../assets/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2");
+}
+
+/*
+ * Design tokens. Restrained financial palette: warm-neutral stone surfaces, one teal brand hue,
+ * and semantic green/red kept for gain/loss and the discount/premium tags only.
+ * Every text/background pair is pinned to WCAG AA (4.5:1) by tokens.contrast.test.ts.
+ * Fonts: IBM Plex Sans (latin 400/500/600, OFL, src/assets/fonts) is self-hosted; the CSP allows only font-src 'self'.
+ */
+:root {
+  --radius: 0.625rem;
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #f0efed;
+  --secondary-foreground: #292524;
+  --muted: #f0efed;
+  --muted-foreground: #57534e;
+  --accent: #e7f3f1;
+  --accent-foreground: #134e4a;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --destructive-hover: #991b1b;
+  --border: #e0deda;
+  --input: #d6d3d1;
+  --ring: #0f766e;
+  --positive: #15803d;
+  --negative: #b91c1c;
+  --tag-discounted-bg: #dcfce7;
+  --tag-discounted-fg: #14532d;
+  --tag-discounted-border: #16a34a;
+  --tag-premium-bg: #fef9c3;
+  --tag-premium-fg: #713f12;
+  --tag-premium-border: #ca8a04;
+  --tag-extra-premium-bg: #ffedd5;
+  --tag-extra-premium-fg: #7c2d12;
+  --tag-extra-premium-border: #ea580c;
+  --tag-unavailable-bg: #f0efed;
+  --tag-unavailable-fg: #44403c;
+  --tag-unavailable-border: #78716c;
+  --tag-caution-bg: #fef3c7;
+  --tag-caution-fg: #78350f;
+  --tag-caution-border: #d97706;
+  --tag-flagged-bg: #fee2e2;
+  --tag-flagged-fg: #7f1d1d;
+  --tag-flagged-border: #b91c1c;
+}
+
+.dark {
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --card: #171412;
+  --card-foreground: #fafaf9;
+  --popover: #171412;
+  --popover-foreground: #fafaf9;
+  --primary: #2dd4bf;
+  --primary-foreground: #042f2e;
+  --secondary: #26211e;
+  --secondary-foreground: #fafaf9;
+  --muted: #26211e;
+  --muted-foreground: #a8a29e;
+  --accent: #123c38;
+  --accent-foreground: #ccfbf1;
+  --destructive: #ef4444;
+  --destructive-foreground: #0c0a09;
+  --destructive-hover: #f87171;
+  --border: #2e2926;
+  --input: #3a3532;
+  --ring: #2dd4bf;
+  --positive: #4ade80;
+  --negative: #f87171;
+  --tag-discounted-bg: #052e16;
+  --tag-discounted-fg: #86efac;
+  --tag-discounted-border: #22c55e;
+  --tag-premium-bg: #422006;
+  --tag-premium-fg: #fde047;
+  --tag-premium-border: #eab308;
+  --tag-extra-premium-bg: #431407;
+  --tag-extra-premium-fg: #fdba74;
+  --tag-extra-premium-border: #f97316;
+  --tag-unavailable-bg: #292524;
+  --tag-unavailable-fg: #d6d3d1;
+  --tag-unavailable-border: #a8a29e;
+  --tag-caution-bg: #451a03;
+  --tag-caution-fg: #fcd34d;
+  --tag-caution-border: #f59e0b;
+  --tag-flagged-bg: #450a0a;
+  --tag-flagged-fg: #fecaca;
+  --tag-flagged-border: #f87171;
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-tag-discounted-bg: var(--tag-discounted-bg);
+  --color-tag-discounted-fg: var(--tag-discounted-fg);
+  --color-tag-discounted-border: var(--tag-discounted-border);
+  --color-tag-premium-bg: var(--tag-premium-bg);
+  --color-tag-premium-fg: var(--tag-premium-fg);
+  --color-tag-premium-border: var(--tag-premium-border);
+  --color-tag-extra-premium-bg: var(--tag-extra-premium-bg);
+  --color-tag-extra-premium-fg: var(--tag-extra-premium-fg);
+  --color-tag-extra-premium-border: var(--tag-extra-premium-border);
+  --color-tag-unavailable-bg: var(--tag-unavailable-bg);
+  --color-tag-unavailable-fg: var(--tag-unavailable-fg);
+  --color-tag-unavailable-border: var(--tag-unavailable-border);
+  --color-tag-caution-bg: var(--tag-caution-bg);
+  --color-tag-caution-fg: var(--tag-caution-fg);
+  --color-tag-caution-border: var(--tag-caution-border);
+  --color-tag-flagged-bg: var(--tag-flagged-bg);
+  --color-tag-flagged-fg: var(--tag-flagged-fg);
+  --color-tag-flagged-border: var(--tag-flagged-border);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  /* type scale: one steep step for page titles, tight tracking and balanced wrapping on headings */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+  }
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  @media (min-width: 48rem) {
+    h1 {
+      font-size: 1.875rem;
+    }
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* biome-ignore-start lint/complexity/noImportantStyles: the reduced-motion reset must beat component-level animation and transition utilities */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* biome-ignore-end lint/complexity/noImportantStyles: reduced-motion reset */

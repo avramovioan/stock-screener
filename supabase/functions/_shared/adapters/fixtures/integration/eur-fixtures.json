@@ -1,0 +1,164 @@
+{
+  "catalogue": {
+    "IBIS": [
+      [
+        {
+          "type": "STK",
+          "symbol": "MSF",
+          "exchangeId": "IBIS",
+          "localSymbol": "MSF",
+          "description": "MICROSOFT CORP",
+          "conid": 12178239,
+          "isin": "US5949181045",
+          "cusip": "594918104",
+          "currency": "EUR",
+          "country": "DE",
+          "isPrimeExchId": "T"
+        },
+        {
+          "type": "STK",
+          "symbol": "APC",
+          "exchangeId": "IBIS",
+          "localSymbol": "APC",
+          "description": "APPLE INC",
+          "conid": 13013300,
+          "isin": "US0378331005",
+          "currency": "EUR",
+          "country": "DE"
+        },
+        {
+          "type": "STK",
+          "symbol": "SAP",
+          "exchangeId": "IBIS",
+          "localSymbol": "SAP",
+          "description": "SAP SE",
+          "conid": 14204,
+          "isin": "DE0007164600",
+          "currency": "EUR",
+          "country": "DE"
+        },
+        {
+          "type": "ETF",
+          "symbol": "TESTETF",
+          "exchangeId": "IBIS",
+          "localSymbol": "TESTETF",
+          "description": "SYNTHETIC ETF ROW (TEST ONLY)",
+          "conid": 900000001,
+          "isin": null,
+          "currency": "EUR",
+          "country": "DE"
+        },
+        {
+          "type": "STK",
+          "symbol": "TESTUSD",
+          "exchangeId": "IBIS",
+          "localSymbol": "TESTUSD",
+          "description": "SYNTHETIC USD STOCK ROW (TEST ONLY)",
+          "conid": 900000002,
+          "isin": null,
+          "currency": "USD",
+          "country": "DE"
+        }
+      ]
+    ],
+    "AEB": [
+      [
+        {
+          "type": "STK",
+          "symbol": "ADYEN",
+          "exchangeId": "AEB",
+          "localSymbol": "ADYEN",
+          "description": "ADYEN NV",
+          "conid": 321202935,
+          "isin": "NL0012969182",
+          "currency": "EUR",
+          "country": "NL"
+        },
+        {
+          "type": "STK",
+          "symbol": "ASML",
+          "exchangeId": "AEB",
+          "localSymbol": "ASML",
+          "description": "ASML HOLDING NV",
+          "conid": 117589399,
+          "isin": "NL0010273215",
+          "currency": "EUR",
+          "country": "NL"
+        },
+        {
+          "type": "IOPT",
+          "symbol": "TESTTRK",
+          "exchangeId": "AEB",
+          "localSymbol": "TESTTRK",
+          "description": "SYNTHETIC TRACKER ETP ROW (TEST ONLY)",
+          "conid": 900000003,
+          "isin": null,
+          "currency": "EUR",
+          "country": "NL"
+        },
+        {
+          "type": "STK",
+          "symbol": "UNVB",
+          "exchangeId": "AEB",
+          "localSymbol": "UNA",
+          "description": "UNILEVER PLC",
+          "conid": 837455595,
+          "isin": "GB00BVZK7T90",
+          "currency": "EUR",
+          "country": "NL"
+        },
+        {
+          "type": "STK",
+          "symbol": "MSFT",
+          "exchangeId": "AEB",
+          "localSymbol": "MSFT",
+          "description": "SYNTHETIC LOOK-ALIKE TRACKER (TEST ONLY)",
+          "conid": 900000010,
+          "isin": "XS0000000010",
+          "currency": "EUR",
+          "country": "NL"
+        }
+      ]
+    ]
+  },
+  "isins": {
+    "US5949181045": "MSFT",
+    "XS0000000010": "MSFT.AS"
+  },
+  "quotes": {
+    "MSF.DE": {
+      "language": "en-US",
+      "region": "US",
+      "market": "us_market",
+      "symbol": "MSF.DE",
+      "quoteType": "EQUITY",
+      "currency": "EUR",
+      "financialCurrency": "USD",
+      "exchange": "GER",
+      "fullExchangeName": "XETRA",
+      "longName": "Microsoft Corporation",
+      "shortName": "Microsoft Corporation",
+      "marketCap": 3962939637760,
+      "sharesOutstanding": 7425545491,
+      "regularMarketPrice": 477.74,
+      "regularMarketTime": "2026-10-14T20:00:01.000Z",
+      "regularMarketPreviousClose": 543.45,
+      "regularMarketChangePercent": -1.79594,
+      "marketState": "PREPRE",
+      "firstTradeDateMilliseconds": "1986-03-13T14:30:00.000Z",
+      "exchangeTimezoneName": "America/New_York",
+      "priceHint": 2,
+      "averageDailyVolume3Month": 27283576
+    },
+    "MSFT.AS": {
+      "symbol": "MSFT.AS",
+      "quoteType": "ETF",
+      "currency": "EUR",
+      "exchange": "AMS",
+      "fullExchangeName": "Amsterdam",
+      "longName": "LS 1x Microsoft Tracker ETP Securities",
+      "regularMarketPrice": 9.664,
+      "regularMarketTime": "2026-10-14T20:00:01.000Z"
+    }
+  }
+}

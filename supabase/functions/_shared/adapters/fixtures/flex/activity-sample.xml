@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexQueryResponse queryName="Screener" type="AF">
+  <FlexStatements count="1">
+    <FlexStatement accountId="U1234567" fromDate="20260915" toDate="20261014" period="Last365CalendarDays" whenGenerated="20261015;030512">
+      <AccountInformation accountId="U1234567" acctAlias="Fixture" currency="EUR" name="Fixture Owner" accountType="Individual" />
+      <OpenPositions>
+        <OpenPosition accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="100001" isin="US0378331005" reportDate="20261014" position="10" multiplier="1" markPrice="230.00" positionValue="2300.00" openPrice="200.17" costBasisPrice="200.17" costBasisMoney="2001.70" percentOfNAV="12.50" fifoPnlUnrealized="298.30" side="Long" levelOfDetail="SUMMARY" futureField="kept-in-raw" />
+        <OpenPosition accountId="U1234567" currency="GBP" fxRateToBase="1.15" assetCategory="STK" symbol="SHEL" description="VANG S&amp;P500 USDD" conid="100002" isin="GB00BP6MXD84" reportDate="20261014" position="100" multiplier="1" markPrice="27.35" positionValue="2735.00" openPrice="25.00" costBasisPrice="25.00" costBasisMoney="2500.00" percentOfNAV="17.10" fifoPnlUnrealized="235.00" side="Long" levelOfDetail="SUMMARY" />
+        <OpenPosition accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="100001" isin="US0378331005" reportDate="20261014" position="6" multiplier="1" markPrice="230.00" positionValue="1380.00" openPrice="199.50" costBasisPrice="199.67" costBasisMoney="1198.00" fifoPnlUnrealized="182.00" side="Long" levelOfDetail="LOT" openDateTime="20261009;093001" />
+      </OpenPositions>
+      <Trades>
+        <Trade accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="100001" isin="US0378331005" listingExchange="NASDAQ" tradeID="1001001" reportDate="20261014" tradeDate="20261009" tradeTime="093001" dateTime="20261009;093001" settleDateTarget="20261012" transactionType="ExchTrade" exchange="NASDAQ" quantity="6" tradePrice="199.50" multiplier="1" tradeMoney="1197.00" proceeds="-1197.00" taxes="0" ibCommission="-1.00" ibCommissionCurrency="USD" openCloseIndicator="O" notes="P" costBasis="1198.00" fifoPnlRealized="0" buySell="BUY" ibOrderID="5001" ibExecID="0000f001.6710a001.01.01" netCash="-1198.00" orderType="LMT" levelOfDetail="EXECUTION" />
+        <Trade accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="100001" isin="US0378331005" listingExchange="NASDAQ" tradeID="1001002" reportDate="20261014" tradeDate="20261009" tradeTime="093007" dateTime="20261009;093007" settleDateTarget="20261012" transactionType="ExchTrade" exchange="NASDAQ" quantity="4" tradePrice="200.75" multiplier="1" tradeMoney="803.00" proceeds="-803.00" taxes="0" ibCommission="-0.70" ibCommissionCurrency="USD" openCloseIndicator="O" notes="P" costBasis="803.70" fifoPnlRealized="0" buySell="BUY" ibOrderID="5001" ibExecID="0000f001.6710a002.01.01" netCash="-803.70" orderType="LMT" levelOfDetail="EXECUTION" />
+        <Trade accountId="U1234567" currency="GBP" fxRateToBase="1.15" assetCategory="STK" symbol="SHEL" description="SHELL PLC" conid="100002" isin="GB00BP6MXD84" listingExchange="LSE" tradeID="2002001" reportDate="20261014" tradeDate="20261008" tradeTime="110500" dateTime="20261008;110500" settleDateTarget="20261012" transactionType="ExchTrade" exchange="LSE" quantity="-4" tradePrice="26.50" multiplier="1" tradeMoney="-106.00" proceeds="106.00" taxes="0" ibCommission="-0.40" ibCommissionCurrency="GBP" openCloseIndicator="C" notes="P" costBasis="-101.00" fifoPnlRealized="4.60" buySell="SELL" ibOrderID="5002" ibExecID="0000f002.6709b001.01.01" netCash="105.60" orderType="LMT" levelOfDetail="EXECUTION" />
+        <Lot accountId="U1234567" currency="GBP" fxRateToBase="1.15" assetCategory="STK" symbol="SHEL" description="SHELL PLC" conid="100002" isin="GB00BP6MXD84" tradeID="2002001" reportDate="20261014" tradeDate="20261008" dateTime="20261008;110500" openDateTime="20260115;093000" quantity="3" tradePrice="26.50" costBasis="75.00" proceeds="79.50" fifoPnlRealized="4.20" buySell="SELL" levelOfDetail="CLOSED_LOT" />
+        <Lot accountId="U1234567" currency="GBP" fxRateToBase="1.15" assetCategory="STK" symbol="SHEL" description="SHELL PLC" conid="100002" isin="GB00BP6MXD84" tradeID="2002001" reportDate="20261014" tradeDate="20261008" dateTime="20261008;110500" openDateTime="20260220;101500" quantity="-1" tradePrice="26.50" costBasis="26.00" proceeds="26.50" fifoPnlRealized="0.40" buySell="SELL" levelOfDetail="CLOSED_LOT" />
+      </Trades>
+      <CashTransactions>
+        <CashTransaction accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="AAPL(US0378331005) CASH DIVIDEND USD 0.26 PER SHARE (Ordinary Dividend)" conid="100001" isin="US0378331005" dateTime="20261010;202500" amount="2.60" type="Dividends" tradeID="" code="" reportDate="20261014" />
+        <CashTransaction accountId="U1234567" currency="USD" fxRateToBase="0.92" assetCategory="STK" symbol="AAPL" description="AAPL(US0378331005) CASH DIVIDEND USD 0.26 PER SHARE - US TAX" conid="100001" isin="US0378331005" dateTime="20261010;202500" amount="-0.39" type="Withholding Tax" tradeID="" code="" reportDate="20261014" />
+        <CashTransaction accountId="U1234567" currency="EUR" fxRateToBase="1" assetCategory="" symbol="" description="Electronic Fund Transfer" conid="" isin="" dateTime="20260916;120000" amount="5000.00" type="Deposits/Withdrawals" tradeID="" code="" reportDate="20260916" />
+        <CashTransaction accountId="U1234567" currency="EUR" fxRateToBase="1" assetCategory="" symbol="" description="Market data fee" conid="" isin="" dateTime="20261001;000000" amount="-2.00" type="Other Fees" tradeID="" code="" reportDate="20261001" />
+      </CashTransactions>
+      <ConversionRates>
+        <ConversionRate reportDate="20261014" fromCurrency="USD" toCurrency="EUR" rate="0.92" />
+        <ConversionRate reportDate="20261014" fromCurrency="GBP" toCurrency="EUR" rate="1.15" />
+      </ConversionRates>
+      <EquitySummaryInBase>
+        <EquitySummaryByReportDateInBase accountId="U1234567" currency="EUR" reportDate="20261013" cash="1000.00" stock="8800.55" options="0" bonds="0" interestAccruals="0.00" dividendAccruals="0.00" total="9800.55" />
+        <EquitySummaryByReportDateInBase accountId="U1234567" currency="EUR" reportDate="20261014" cash="1000.00" stock="8950.20" options="0" bonds="0" interestAccruals="0.00" dividendAccruals="0.00" total="9950.20" />
+      </EquitySummaryInBase>
+      <SecuritiesInfo>
+        <SecurityInfo assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="100001" isin="US0378331005" subCategory="COMMON" listingExchange="NASDAQ" />
+        <SecurityInfo assetCategory="STK" symbol="SHEL" description="SHELL PLC" conid="100002" isin="GB00BP6MXD84" subCategory="COMMON" listingExchange="LSE" />
+      </SecuritiesInfo>
+      <CorporateActions>
+        <CorporateAction accountId="U1234567" currency="USD" assetCategory="STK" symbol="XYZ" conid="100003" reportDate="20260930" dateTime="20260930;202500" actionDescription="XYZ(US0000000001) SPLIT 2 FOR 1" amount="0" proceeds="0" value="0" quantity="10" fifoPnlRealized="0" code="" type="FS" actionID="900001" transactionID="800001" />
+      </CorporateActions>
+      <Transfers />
+      <ChangeInDividendAccruals>
+        <ChangeInDividendAccrual accountId="U1234567" currency="USD" symbol="AAPL" conid="100001" date="20261008" exDate="20261008" payDate="20261010" quantity="10" tax="-0.39" fee="0" grossRate="0.26" grossAmount="2.60" netAmount="2.21" code="Po" reportDate="20261014" />
+      </ChangeInDividendAccruals>
+    </FlexStatement>
+  </FlexStatements>
+</FlexQueryResponse>

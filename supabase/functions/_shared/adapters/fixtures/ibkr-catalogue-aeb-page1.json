@@ -1,0 +1,51 @@
+{
+  "_note": "Test fixture. Symbols, localSymbols, conids and ISINs of ASML, ADYEN and Unilever PLC (symbol UNVB, localSymbol UNA) come from docs/discovery/research/ibkr-flex-links-ibot.md section 6; the descriptions are reconstructed. The IOPT row is a SYNTHETIC filter probe, not a real product.",
+  "products": [
+    {
+      "type": "STK",
+      "symbol": "ADYEN",
+      "exchangeId": "AEB",
+      "localSymbol": "ADYEN",
+      "description": "ADYEN NV",
+      "conid": 321202935,
+      "isin": "NL0012969182",
+      "currency": "EUR",
+      "country": "NL"
+    },
+    {
+      "type": "STK",
+      "symbol": "ASML",
+      "exchangeId": "AEB",
+      "localSymbol": "ASML",
+      "description": "ASML HOLDING NV",
+      "conid": 117589399,
+      "isin": "NL0010273215",
+      "currency": "EUR",
+      "country": "NL"
+    },
+    {
+      "type": "IOPT",
+      "symbol": "TESTTRK",
+      "exchangeId": "AEB",
+      "localSymbol": "TESTTRK",
+      "description": "SYNTHETIC TRACKER ETP ROW (TEST ONLY)",
+      "conid": 900000003,
+      "isin": null,
+      "currency": "EUR",
+      "country": "NL"
+    },
+    {
+      "type": "STK",
+      "symbol": "UNVB",
+      "exchangeId": "AEB",
+      "localSymbol": "UNA",
+      "description": "UNILEVER PLC",
+      "conid": 837455595,
+      "isin": "GB00BVZK7T90",
+      "currency": "EUR",
+      "country": "NL"
+    }
+  ],
+  "productTypeCount": [{ "productType": "STK", "count": 3 }, { "productType": "IOPT", "count": 1 }],
+  "productCount": 4
+}

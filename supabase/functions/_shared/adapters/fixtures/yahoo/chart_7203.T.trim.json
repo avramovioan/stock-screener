@@ -1,0 +1,424 @@
+{
+  "meta": {
+    "currency": "JPY",
+    "symbol": "7203.T",
+    "exchangeName": "JPX",
+    "fullExchangeName": "Tokyo",
+    "instrumentType": "EQUITY",
+    "firstTradeDate": "1999-05-06T00:00:00.000Z",
+    "regularMarketTime": "2026-10-15T06:30:00.000Z",
+    "hasPrePostMarketData": false,
+    "gmtoffset": 32400,
+    "timezone": "JST",
+    "exchangeTimezoneName": "Asia/Tokyo",
+    "regularMarketPrice": 3029,
+    "regularMarketChangePercent": 0.598,
+    "fulldayPrice": 3029,
+    "fulldayChange": 18,
+    "fulldayChangePercent": 0.598,
+    "fiftyTwoWeekHigh": 4000,
+    "fiftyTwoWeekLow": 2686,
+    "regularMarketDayHigh": 3046,
+    "regularMarketDayLow": 2975,
+    "regularMarketVolume": 32262800,
+    "longName": "Toyota Motor Corporation",
+    "shortName": "TOYOTA MOTOR CORP",
+    "chartPreviousClose": 1284,
+    "priceHint": 2,
+    "currentTradingPeriod": {
+      "pre": {
+        "timezone": "JST",
+        "end": "2026-10-15T00:00:00.000Z",
+        "start": "2026-10-15T00:00:00.000Z",
+        "gmtoffset": 32400
+      },
+      "regular": {
+        "timezone": "JST",
+        "end": "2026-10-15T06:30:00.000Z",
+        "start": "2026-10-15T00:00:00.000Z",
+        "gmtoffset": 32400
+      },
+      "post": {
+        "timezone": "JST",
+        "end": "2026-10-15T06:30:00.000Z",
+        "start": "2026-10-15T06:30:00.000Z",
+        "gmtoffset": 32400
+      }
+    },
+    "dataGranularity": "1d",
+    "range": "",
+    "validRanges": ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+  },
+  "quotes": [
+    {
+      "date": "2026-08-17T00:00:00.000Z",
+      "high": 3052,
+      "volume": 15465900,
+      "open": 3043,
+      "low": 3007,
+      "close": 3013,
+      "adjclose": 2962.556396484375
+    },
+    {
+      "date": "2026-08-18T00:00:00.000Z",
+      "high": 3027,
+      "volume": 17285000,
+      "open": 3006,
+      "low": 2989,
+      "close": 3022,
+      "adjclose": 2971.40576171875
+    },
+    {
+      "date": "2026-08-19T00:00:00.000Z",
+      "high": 3024,
+      "volume": 26717600,
+      "open": 3023,
+      "low": 2927,
+      "close": 2941,
+      "adjclose": 2891.76171875
+    },
+    {
+      "date": "2026-08-20T00:00:00.000Z",
+      "high": 3078,
+      "volume": 30687200,
+      "open": 3000,
+      "low": 3000,
+      "close": 3066,
+      "adjclose": 3014.6689453125
+    },
+    {
+      "date": "2026-08-21T00:00:00.000Z",
+      "high": 3132,
+      "volume": 25924500,
+      "open": 3066,
+      "low": 3056,
+      "close": 3132,
+      "adjclose": 3079.56396484375
+    },
+    {
+      "date": "2026-08-24T00:00:00.000Z",
+      "high": 3141,
+      "volume": 19283900,
+      "open": 3132,
+      "low": 3077,
+      "close": 3125,
+      "adjclose": 3072.681396484375
+    },
+    {
+      "date": "2026-08-25T00:00:00.000Z",
+      "high": 3120,
+      "volume": 18602900,
+      "open": 3095,
+      "low": 3073,
+      "close": 3082,
+      "adjclose": 3030.401123046875
+    },
+    {
+      "date": "2026-08-26T00:00:00.000Z",
+      "high": 3104,
+      "volume": 18377900,
+      "open": 3071,
+      "low": 3066,
+      "close": 3070,
+      "adjclose": 3018.60205078125
+    },
+    {
+      "date": "2026-08-27T00:00:00.000Z",
+      "high": 3120,
+      "volume": 18488000,
+      "open": 3104,
+      "low": 3064,
+      "close": 3077,
+      "adjclose": 3025.48486328125
+    },
+    {
+      "date": "2026-08-28T00:00:00.000Z",
+      "high": 3145,
+      "volume": 24831800,
+      "open": 3090,
+      "low": 3081,
+      "close": 3116,
+      "adjclose": 3063.83203125
+    },
+    {
+      "date": "2026-08-31T00:00:00.000Z",
+      "high": 3188,
+      "volume": 33832100,
+      "open": 3120,
+      "low": 3116,
+      "close": 3156,
+      "adjclose": 3103.162353515625
+    },
+    {
+      "date": "2026-09-01T00:00:00.000Z",
+      "high": 3269,
+      "volume": 28612900,
+      "open": 3150,
+      "low": 3145,
+      "close": 3243,
+      "adjclose": 3188.705810546875
+    },
+    {
+      "date": "2026-09-02T00:00:00.000Z",
+      "high": 3190,
+      "volume": 26793300,
+      "open": 3158,
+      "low": 3121,
+      "close": 3133,
+      "adjclose": 3080.54736328125
+    },
+    {
+      "date": "2026-09-03T00:00:00.000Z",
+      "high": 3182,
+      "volume": 22107500,
+      "open": 3162,
+      "low": 3117,
+      "close": 3117,
+      "adjclose": 3064.815185546875
+    },
+    {
+      "date": "2026-09-04T00:00:00.000Z",
+      "high": 3142,
+      "volume": 21768900,
+      "open": 3126,
+      "low": 3081,
+      "close": 3081,
+      "adjclose": 3029.41796875
+    },
+    {
+      "date": "2026-09-07T00:00:00.000Z",
+      "high": 3120,
+      "volume": 12938800,
+      "open": 3110,
+      "low": 3088,
+      "close": 3096,
+      "adjclose": 3044.166748046875
+    },
+    {
+      "date": "2026-09-08T00:00:00.000Z",
+      "high": 3040,
+      "volume": 30560900,
+      "open": 3040,
+      "low": 2968.5,
+      "close": 2968.5,
+      "adjclose": 2918.801513671875
+    },
+    {
+      "date": "2026-09-09T00:00:00.000Z",
+      "high": 2995.5,
+      "volume": 24802100,
+      "open": 2950,
+      "low": 2939.5,
+      "close": 2971,
+      "adjclose": 2921.259521484375
+    },
+    {
+      "date": "2026-09-10T00:00:00.000Z",
+      "high": 2994,
+      "volume": 18691400,
+      "open": 2960,
+      "low": 2945,
+      "close": 2994,
+      "adjclose": 2943.87451171875
+    },
+    {
+      "date": "2026-09-11T00:00:00.000Z",
+      "high": 3040,
+      "volume": 27282400,
+      "open": 2950.5,
+      "low": 2950,
+      "close": 3031,
+      "adjclose": 2980.255126953125
+    },
+    {
+      "date": "2026-09-14T00:00:00.000Z",
+      "high": 3056,
+      "volume": 22994300,
+      "open": 3026,
+      "low": 3014,
+      "close": 3025,
+      "adjclose": 2974.35546875
+    },
+    {
+      "date": "2026-09-15T00:00:00.000Z",
+      "high": 3042,
+      "volume": 19958900,
+      "open": 3025,
+      "low": 3010,
+      "close": 3021,
+      "adjclose": 2970.42236328125
+    },
+    {
+      "date": "2026-09-16T00:00:00.000Z",
+      "high": 3068,
+      "volume": 17508600,
+      "open": 3043,
+      "low": 3016,
+      "close": 3016,
+      "adjclose": 2965.506103515625
+    },
+    {
+      "date": "2026-09-17T00:00:00.000Z",
+      "high": 3042,
+      "volume": 20929600,
+      "open": 3016,
+      "low": 3011,
+      "close": 3034,
+      "adjclose": 2983.204833984375
+    },
+    {
+      "date": "2026-09-18T00:00:00.000Z",
+      "high": 3051,
+      "volume": 46568200,
+      "open": 3043,
+      "low": 2999,
+      "close": 3025,
+      "adjclose": 2974.35546875
+    },
+    {
+      "date": "2026-09-24T00:00:00.000Z",
+      "high": 3019,
+      "volume": 33817300,
+      "open": 3002,
+      "low": 2964,
+      "close": 2969,
+      "adjclose": 2919.29296875
+    },
+    {
+      "date": "2026-09-25T00:00:00.000Z",
+      "high": 3003,
+      "volume": 21084000,
+      "open": 2990,
+      "low": 2979,
+      "close": 2989.5,
+      "adjclose": 2939.44970703125
+    },
+    {
+      "date": "2026-09-28T00:00:00.000Z",
+      "high": 3024,
+      "volume": 26063800,
+      "open": 3003,
+      "low": 2986.5,
+      "close": 2986.5,
+      "adjclose": 2936.5
+    },
+    {
+      "date": "2026-09-29T00:00:00.000Z",
+      "high": 2925.5,
+      "volume": 34117700,
+      "open": 2925,
+      "low": 2881,
+      "close": 2881.5,
+      "adjclose": 2881.5
+    },
+    {
+      "date": "2026-09-30T00:00:00.000Z",
+      "high": 2931.5,
+      "volume": 29166700,
+      "open": 2906,
+      "low": 2878,
+      "close": 2920,
+      "adjclose": 2920
+    },
+    {
+      "date": "2026-10-01T00:00:00.000Z",
+      "high": 2942.5,
+      "volume": 26937700,
+      "open": 2900,
+      "low": 2894.5,
+      "close": 2925,
+      "adjclose": 2925
+    },
+    {
+      "date": "2026-10-02T00:00:00.000Z",
+      "high": 2890,
+      "volume": 30938400,
+      "open": 2884,
+      "low": 2853,
+      "close": 2856.5,
+      "adjclose": 2856.5
+    },
+    {
+      "date": "2026-10-05T00:00:00.000Z",
+      "high": 2900,
+      "volume": 23901000,
+      "open": 2873.5,
+      "low": 2867.5,
+      "close": 2893.5,
+      "adjclose": 2893.5
+    },
+    {
+      "date": "2026-10-06T00:00:00.000Z",
+      "high": 2937.5,
+      "volume": 19613500,
+      "open": 2920,
+      "low": 2904,
+      "close": 2930.5,
+      "adjclose": 2930.5
+    },
+    {
+      "date": "2026-10-07T00:00:00.000Z",
+      "high": 2944.5,
+      "volume": 21035200,
+      "open": 2930.5,
+      "low": 2900.5,
+      "close": 2900.5,
+      "adjclose": 2900.5
+    },
+    {
+      "date": "2026-10-08T00:00:00.000Z",
+      "high": 2923,
+      "volume": 21975200,
+      "open": 2900,
+      "low": 2889,
+      "close": 2902,
+      "adjclose": 2902
+    },
+    {
+      "date": "2026-10-09T00:00:00.000Z",
+      "high": 2936.5,
+      "volume": 17845800,
+      "open": 2936,
+      "low": 2891,
+      "close": 2910.5,
+      "adjclose": 2910.5
+    },
+    {
+      "date": "2026-10-13T00:00:00.000Z",
+      "high": 2984,
+      "volume": 25048800,
+      "open": 2930,
+      "low": 2916.5,
+      "close": 2984,
+      "adjclose": 2984
+    },
+    {
+      "date": "2026-10-14T00:00:00.000Z",
+      "high": 3022,
+      "volume": 19149000,
+      "open": 2988,
+      "low": 2972.5,
+      "close": 3011,
+      "adjclose": 3011
+    },
+    {
+      "date": "2026-10-15T00:00:00.000Z",
+      "high": 3046,
+      "volume": 32262800,
+      "open": 2987,
+      "low": 2975,
+      "close": 3029,
+      "adjclose": 3029
+    }
+  ],
+  "events": {
+    "splits": [
+      {
+        "date": "2021-09-29T00:00:00.000Z",
+        "numerator": 5,
+        "denominator": 1,
+        "splitRatio": "5:1"
+      }
+    ]
+  }
+}

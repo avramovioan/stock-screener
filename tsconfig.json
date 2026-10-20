@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "lib": ["ES2023"], "types": ["node"] },
+  "include": [
+    "tools",
+    "vitest.config.ts",
+    "apps/web/playwright.config.ts",
+    "apps/web/playwright.local.config.ts"
+  ]
+}

@@ -1,0 +1,8 @@
+$ bun run lint:workflows
+exit code: 0
+duration: 1.0 s
+finished: 2026-10-16T13:46:56.832Z
+--- last 120 lines ---
+workflows: OK (ci.yml, deploy-supabase.yml, deploy-web.yml, keepalive.yml)
+$ bun run tools/validate-workflows.ts
+

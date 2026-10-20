@@ -1,0 +1,7 @@
+[install]
+# future `bun add` writes exact versions; hand-written package.json files may use caret ranges,
+# the committed bun.lock is what pins the tree
+exact = true
+# Bun 1.3 defaults to the isolated linker for workspaces. The root Vitest config, Biome and the
+# tools/ scripts resolve packages from the root node_modules, so use the classic hoisted layout.
+linker = "hoisted"

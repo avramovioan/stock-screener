@@ -1,0 +1,34 @@
+# dependencies and build output
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# environment files: never commit values, only .env.example
+.env*
+!.env.example
+
+# Supabase local state
+supabase/.temp/
+supabase/.branches/
+
+# test output
+apps/web/e2e/local/.auth/
+playwright-report/
+test-results/
+
+# Cloudflare / wrangler local state
+.wrangler/
+
+# editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
+supabase/functions/_shared/adapters/fixtures/yahoo/recorded/
+backups/
+
+# Deno writes this when a tool runs outside supabase/functions; supabase/functions/deno.json sets "lock": false
+deno.lock

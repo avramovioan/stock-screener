@@ -1,0 +1,125 @@
+$ bun run lint
+exit code: 0
+duration: 3.8 s
+finished: 2026-10-16T13:46:55.783Z
+--- last 120 lines ---
+  ! Forbidden non-null assertion.
+  
+    227 │ // ---------------------------------------------------------------- engineering the two discount candidates
+    228 │ function cleaned(symbol: string, overrides: Record<string, [number, number, number, number]>) {
+  > 229 │   const s = specs[symbol]!;
+        │             ^^^^^^^^^^^^^^
+    230 │   const d = donors[s.donor];
+    231 │   const period = d.meta.currentTradingPeriod;
+  
+
+tools\gen-integration-fixtures.ts:262:19 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    260 │   const first = cleaned(symbol, ov);
+    261 │   // the last COMPLETED bar is the one the handler will retain: find its raw timestamp
+  > 262 │   const lastDay = first.series.dates[first.series.dates.length - 1]!;
+        │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    263 │   const lastRaw = [...first.raw].reverse().find(
+    264 │     (b: RawBar) =>
+  
+
+tools\gen-integration-fixtures.ts:263:19 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    261 │   // the last COMPLETED bar is the one the handler will retain: find its raw timestamp
+    262 │   const lastDay = first.series.dates[first.series.dates.length - 1]!;
+  > 263 │   const lastRaw = [...first.raw].reverse().find(
+        │                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 264 │     (b: RawBar) =>
+         ...
+  > 277 │       ).series.dates[0] === lastDay,
+  > 278 │   )!;
+        │   ^^
+    279 │   let close = first.series.close[first.series.close.length - 1]!;
+    280 │   for (let i = 0; i < 60; i++) {
+  
+
+tools\gen-integration-fixtures.ts:271:13 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\  FIXABLE  ━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    269 │         {
+    270 │           exchangeTimezoneName:
+  > 271 │             specs[symbol]!.quote.exchangeTimezoneName ??
+        │             ^^^^^^^^^^^^^^
+    272 │             donors[specs[symbol]!.donor].meta.exchangeTimezoneName,
+    273 │           regularMarketTime: null,
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    269 269 │           {
+    270 270 │             exchangeTimezoneName:
+    271     │ - ············specs[symbol]!.quote.exchangeTimezoneName·??
+        271 │ + ············specs[symbol]?.quote.exchangeTimezoneName·??
+    272 272 │               donors[specs[symbol]!.donor].meta.exchangeTimezoneName,
+    273 273 │             regularMarketTime: null,
+  
+
+tools\gen-integration-fixtures.ts:272:20 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\  FIXABLE  ━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    270 │           exchangeTimezoneName:
+    271 │             specs[symbol]!.quote.exchangeTimezoneName ??
+  > 272 │             donors[specs[symbol]!.donor].meta.exchangeTimezoneName,
+        │                    ^^^^^^^^^^^^^^
+    273 │           regularMarketTime: null,
+    274 │           currentTradingPeriod: { start: b.time + 1, end: b.time + 2 },
+  
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+  
+    270 270 │             exchangeTimezoneName:
+    271 271 │               specs[symbol]!.quote.exchangeTimezoneName ??
+    272     │ - ············donors[specs[symbol]!.donor].meta.exchangeTimezoneName,
+        272 │ + ············donors[specs[symbol]?.donor].meta.exchangeTimezoneName,
+    273 273 │             regularMarketTime: null,
+    274 274 │             currentTradingPeriod: { start: b.time + 1, end: b.time + 2 },
+  
+
+tools\gen-integration-fixtures.ts:279:15 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    277 │       ).series.dates[0] === lastDay,
+    278 │   )!;
+  > 279 │   let close = first.series.close[first.series.close.length - 1]!;
+        │               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    280 │   for (let i = 0; i < 60; i++) {
+    281 │     ov[String(lastRaw.time)] = [close * 0.995, close * 1.012, close * 0.985, close];
+  
+
+tools\gen-integration-fixtures.ts:301:17 ]8;;https://biomejs.dev/linter/rules/no-non-null-assertion\lint/style/noNonNullAssertion]8;;\ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+    299 │   if (!out.ok) throw new Error(`${symbol}: ${out.reason} (${c.series.dates.length} bars)`);
+    300 │   const ch = out.channel;
+  > 301 │   const close = c.series.close[c.series.close.length - 1]!;
+        │                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    302 │   rows.push(
+    303 │     `${symbol.padEnd(8)} bars ${String(c.series.dates.length).padStart(4)} rising ${String(ch.rising).padEnd(5)} close ${close.toFixed(3).padStart(10)} lower1 ${ch.end.lower1.toFixed(3).padStart(10)} lower2 ${ch.end.lower2.toFixed(3).padStart(10)} suspect ${c.report.suspect}`,
+  
+
+tools\lib\workflow-lint.test.ts:90:14 ]8;;https://biomejs.dev/linter/rules/no-template-curly-in-string\lint/suspicious/noTemplateCurlyInString]8;;\ ━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Unexpected template string placeholder.
+  
+    88 │       a: {
+    89 │         "runs-on": "ubuntu-latest",
+  > 90 │         if: "${{ contains(github.event.pull_request.labels.*.name, 'e2e') }}",
+       │              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    91 │         steps: [{ run: "echo hi" }],
+    92 │       },
+  
+  i Turn the string into a template string.
+  
+
+
