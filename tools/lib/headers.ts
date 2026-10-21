@@ -66,6 +66,21 @@ export function renderHeaders(
   };
 }
 
+/**
+ * The render-or-fail decision of the web build. A production build must never ship the placeholder
+ * origin (the CSP would block Supabase), so it fails unless the placeholder is opted into explicitly.
+ */
+export function buildHeaders(
+  template: string,
+  supabaseUrl: string | undefined,
+  options: { mode: string; allowPlaceholder?: boolean },
+): { text: string; origin: string; placeholder: boolean } {
+  const rendered = renderHeaders(template, supabaseUrl);
+  if (rendered.placeholder && options.mode === "production" && options.allowPlaceholder !== true)
+    throw new Error("VITE_SUPABASE_URL is missing or invalid: dist/_headers would block Supabase");
+  return rendered;
+}
+
 function globToRegExp(pattern: string): RegExp {
   const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
   return new RegExp(`^${escaped}$`);

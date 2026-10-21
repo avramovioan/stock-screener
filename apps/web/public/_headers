@@ -1,5 +1,5 @@
 # Cloudflare Workers Static Assets headers (static assets only; there is no Worker script).
-# __SUPABASE_ORIGIN__ and __SUPABASE_WS_ORIGIN__ (Realtime) are replaced after the build by tools/render-headers.ts with the https and wss origins of VITE_SUPABASE_URL.
+# __SUPABASE_ORIGIN__ and __SUPABASE_WS_ORIGIN__ (Realtime) are rendered by the web build (apps/web/vite.config.ts; tools/render-headers.ts re-renders idempotently) with the https and wss origins of VITE_SUPABASE_URL.
 # Strict-Transport-Security is managed in the Cloudflare dashboard (SSL/TLS, Edge Certificates, HSTS).
 /*
   X-Content-Type-Options: nosniff
