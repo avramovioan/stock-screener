@@ -320,6 +320,8 @@ bunx wrangler@4.151.0 deploy
 cd ../..
 ```
 
+Note: `bun run build` reads the Supabase URL from the environment or from `apps/web/.env*` (`.env`, `.env.local`, `.env.production`, `.env.production.local`), the same way Vite does. In a Cloudflare build set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables. Never hard-code the host in `apps/web/public/_headers`; it keeps the `__SUPABASE_ORIGIN__` placeholders and the build fills them in.
+
 ## F. Point the backend at the site
 
 ### F1. Function secrets
@@ -512,14 +514,9 @@ Check: the list shows `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. It never show
 
 ### Hb6. Send the test message
 
-- [ ] Run the call. It asks for the cron secret. Type it at the prompt. Never paste it anywhere else.
+- [ ] Run the call. It asks for the cron secret (hidden input) unless `$env:SCREENER_CRON_SECRET` is set. Never paste it anywhere else.
 
-```powershell
-$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
-$secret = [System.Net.NetworkCredential]::new("", $s).Password
-Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" `
-  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_test"}'
-```
+Run `scripts/telegram-test.ps1`. It calls `scan-control` with `telegram_test` and prints the answer. See `scripts/README.md` for all test scripts and the one-time session setup.
 
 Check: the answer says `ok: True`, `telegram_status: 200`, `description: sent`, and the group shows "Test message from the stock screener."
 The call always answers HTTP 200. Read `ok` and `description` for Telegram's own answer.
@@ -529,12 +526,7 @@ The call always answers HTTP 200. Read `ok` and `description` for Telegram's own
 Use it when the group got nothing. It takes the latest public digest that is ready and younger than 24 hours, queues its Telegram message
 (or tries a failed or skipped one again) and does nothing when it was already sent. The group gets it within a minute.
 
-```powershell
-$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
-$secret = [System.Net.NetworkCredential]::new("", $s).Password
-Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" -SkipHttpErrorCheck `
-  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_send_latest"}'
-```
+Run `scripts/telegram-send-latest.ps1`. It calls `scan-control` with `telegram_send_latest` and prints the answer. See `scripts/README.md`.
 
 Check: `ok: True` and `queued: True` with `digest_id`, `scan_date` and `note: sends within a minute`. Other answers: `queued: False` with
 `reason` `already_sent`, `no_ready_digest` (no ready digest in the last 24 hours) or `not_configured` (a secret is missing).
@@ -648,9 +640,7 @@ $secret = Read-Host "CRON_SHARED_SECRET"
 
 Find the card's `security_id` in the Supabase SQL Editor (table `securities`).
 
-```powershell
-'{"action":"research_now","security_id":"<security uuid>","force":true}' | curl.exe -X POST "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" -H "x-cron-secret: $secret" -H "content-type: application/json" --data-binary "@-"
-```
+Run `scripts/research-now.ps1 -SecurityId <security uuid> -ForceReport`. It asks for the cron secret (hidden input), confirms before it spends AI quota and queues the report.
 
 `force` re-runs a report that failed or was deferred. Operator guide 9.4 and 9.5 show how to read the result.
 
@@ -717,9 +707,7 @@ bunx supabase secrets set --env-file supabase/functions/.env.vapid --project-ref
 - [ ] Redeploy the web app (run Deploy web) so the new public key is in the bundle.
 - [ ] Check the server side. The `push` field must read `configured: true` and `problem: null`:
 
-```powershell
-curl.exe -s https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/health
-```
+Run `scripts/health.ps1`. It prints the health answer and highlights `push.configured` (no secret needed).
 
 Problem codes: `public_missing`, `private_missing`, `subject_missing`, `subject_invalid` (must start with `mailto:` or `https://`), `private_not_json` (quotes lost), `private_not_jwk`, `private_invalid`, `key_mismatch` (public and private keys do not pair).
 

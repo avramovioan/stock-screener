@@ -89,6 +89,8 @@ export interface EurListingPanelProps {
   onAcknowledge: (value: boolean) => void;
   manualSymbol: string;
   onManualSymbol: (value: string) => void;
+  /** The field still holds the untouched home-ticker prefill. */
+  symbolPrefilled?: boolean;
   screeningSymbol: string;
   screeningCurrency: string | null;
   screeningExchange: string | null;
@@ -168,6 +170,11 @@ export function EurListingPanel(p: EurListingPanelProps) {
               spellCheck={false}
               aria-describedby="manual-symbol-note"
             />
+            {p.symbolPrefilled ? (
+              <p className="text-xs text-muted-foreground">
+                Prefilled with the home listing: edit for a EUR listing.
+              </p>
+            ) : null}
             <p id="manual-symbol-note" className="text-xs">
               <span className="font-medium">Unverified symbol.</span> The app has not checked it:
               confirm the contract on the IBKR ticket.

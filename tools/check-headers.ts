@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type HeaderMode, headerProblems, originOf, parseHeadersFile } from "./lib/headers.ts";
+import { webBuildSupabaseUrl } from "./lib/web-build-env.ts";
 
 const args = process.argv.slice(2);
 const flag = (name: string): string | undefined => {
@@ -15,7 +16,7 @@ if (!existsSync(file)) {
   console.error(`check:headers: ${file} not found${template ? "" : " (run bun run build first)"}`);
   process.exit(1);
 }
-const expectedSource = flag("expect-origin") ?? process.env.VITE_SUPABASE_URL;
+const expectedSource = flag("expect-origin") ?? webBuildSupabaseUrl();
 const expectedOrigin =
   expectedSource === undefined ? undefined : (originOf(expectedSource) ?? undefined);
 const mode: HeaderMode = template

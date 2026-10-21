@@ -580,10 +580,12 @@ The list must show both names. It never shows values.
 
 **6. Run the test call.** It sends one fixed message to the group, at once, without waiting for a scan.
 
+Run `scripts/telegram-test.ps1` (calls `scan-control` with `telegram_test`; it asks for the cron secret with hidden input, or reads `$env:SCREENER_CRON_SECRET`). For people without the scripts, the same call by hand:
+
 ```powershell
 $s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
 $secret = [System.Net.NetworkCredential]::new("", $s).Password
-Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" `
+Invoke-RestMethod -Method Post -Uri "https://<ref>.supabase.co/functions/v1/scan-control" `
   -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_test"}'
 ```
 
@@ -594,12 +596,7 @@ The call always answers HTTP 200. Read `ok` and `description` to see what Telegr
 It takes the latest public digest that is ready and younger than 24 hours. It adds the Telegram message if there is none, tries again
 a failed or skipped one, and does nothing for one that was already sent. The group gets the message within a minute.
 
-```powershell
-$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
-$secret = [System.Net.NetworkCredential]::new("", $s).Password
-Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" -SkipHttpErrorCheck `
-  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_send_latest"}'
-```
+Run `scripts/telegram-send-latest.ps1` (calls `scan-control` with `telegram_send_latest`; see `scripts/README.md`).
 
 Answers (always HTTP 200 for these):
 - `ok: True`, `queued: True`, `digest_id`, `scan_date`, `note: sends within a minute`: it is queued.
@@ -691,6 +688,8 @@ Run these once with the owner's account and record the results in this section: 
 
 The step-by-step path from the current hosted project to an always-on Cloudflare site is in [cloudflare-go-live.md](cloudflare-go-live.md).
 
+Note: `bun run build` reads the Supabase URL from the environment or from `apps/web/.env*` (`.env`, `.env.local`, `.env.production`, `.env.production.local`), the same way Vite does. In a Cloudflare build set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables. Never hard-code the host in `apps/web/public/_headers`; it keeps the `__SUPABASE_ORIGIN__` placeholders and the build fills them in.
+
 One-time Cloudflare setup:
 
 1. Create or log in to a Cloudflare account (Free plan; the app processes no card data).
@@ -750,10 +749,18 @@ the first one on a weekday afternoon when you can watch it (section 8).
 | `set_setting` | `key` one of `indicator`, `universe`, `pipeline`, `providers`; `value`; `reason` (3 characters or more); `confirm` `true` | audited settings change |
 | `override` | `kind`, `yahoo_symbol`, `reason`, ... | identity override (`force_canonical`, `exclude`, `force_us`, `force_not_us`, `merge_into_company`, `predecessor_continuity`) |
 | `research_now` | `security_id`, optional `force` | queues a manual research report (section 9.4) |
+| `telegram_test` | none | sends one test message to the Telegram group (4.8) |
+| `telegram_send_latest` | none | queues the latest ready digest for the Telegram group (4.8) |
+| `push_test` | none | sends one test push to every active device, at most once per 5 minutes; answers counts only |
+| `push_send_latest` | none | queues the latest ready digest for devices that have none yet and retries failed ones; kicks the dispatcher |
+
+Ready-made PowerShell scripts for these calls and for the other checks (health, account check, site headers, keep-alive) are in `scripts/`; see `scripts/README.md`. For example `scripts/push-test.ps1` runs `push_test`.
 
 The research caps and the EUR catalogue switch are not `set_setting` keys: change them with SQL on `app_settings` (9.3, section 14).
 
 ## 8. Inspect coverage and failures (filled)
+
+Scripts: `scripts/scan-status.ps1` and `scripts/list-failures.ps1` run the two calls below (see `scripts/README.md`).
 
 ```powershell
 $h = @{ "x-cron-secret" = $env:CRON_SHARED_SECRET }

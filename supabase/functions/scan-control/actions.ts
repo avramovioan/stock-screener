@@ -1,9 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Db } from "../_shared/adapters/db.ts";
 import { scanEvent } from "../_shared/adapters/log.ts";
+import type { PushResult, PushTarget } from "../_shared/adapters/push.ts";
 import { createSupabaseResearchStore } from "../_shared/adapters/research_store.ts";
 import type { TelegramResult } from "../_shared/adapters/telegram.ts";
 import { scanDateLocal } from "../_shared/core/calendar.ts";
+import { pushSendLatest } from "./actions/push_send_latest.ts";
+import { pushTest } from "./actions/push_test.ts";
 import { researchNow } from "./actions/research_now.ts";
 import { telegramTest } from "./actions/telegram_probe.ts";
 import { telegramSendLatest } from "./actions/telegram_send_latest.ts";
@@ -63,6 +66,12 @@ export async function execute(
     allowFixtures: boolean;
     /** null when TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set */
     telegram: { send(text: string): Promise<TelegramResult> } | null;
+    /** push sending adapter and VAPID check (the ones push-subscribe and notify-dispatch use) */
+    push: {
+      siteUrl: string;
+      checkConfig(): Promise<{ configured: boolean; problem: string | null }>;
+      send(sub: PushTarget, payloadJson: string): Promise<PushResult>;
+    };
   },
 ): Promise<Record<string, unknown>> {
   const { db, actor } = deps;
@@ -244,6 +253,19 @@ export async function execute(
       });
       return { id: (data as { id: string }).id };
     }
+
+    case "push_test":
+      return {
+        ...(await pushTest({
+          sb,
+          siteUrl: deps.push.siteUrl,
+          checkConfig: deps.push.checkConfig,
+          sendPush: deps.push.send,
+        })),
+      };
+
+    case "push_send_latest":
+      return { ...(await pushSendLatest({ sb })) };
 
     case "telegram_test":
       return { ...(await telegramTest({ telegram: deps.telegram })) };

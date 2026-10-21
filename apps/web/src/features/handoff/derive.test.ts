@@ -191,3 +191,50 @@ describe("deriveHandoff: no EUR equivalent", () => {
     expect(yahoo.prompt).toBeNull();
   });
 });
+
+describe("deriveHandoff: home market route (no EUR listing, symbol = home ticker)", () => {
+  const home = { ticker: "MSFT", currency: "USD", exchangeName: "NasdaqGS" };
+  const run = (f: FormState) =>
+    deriveHandoff({
+      listings: [],
+      form: f,
+      defaultDestination: "IBIS2",
+      referencePrice: null,
+      home,
+    });
+
+  it("routes the home ticker to SMART in the screening currency", () => {
+    const v = run(form({ manualSymbol: "msft" }));
+    expect(v.mode).toBe("none");
+    expect(v.homeRoute).toEqual({ currency: "USD", exchangeName: "NasdaqGS" });
+    expect(v.destination).toBe("SMART");
+    expect(v.destinationOptions).toEqual([]);
+    expect(v.prompt).toBe(
+      "Create buy limit order for 10 shares of MSFT at 400 and set destination SMART",
+    );
+    expect(v.estimate.label).toContain("4,000.00 USD");
+    expect(v.checklist).toContain("MSFT / USD / destination SMART");
+  });
+
+  it("falls back to the EUR behaviour as soon as the symbol differs", () => {
+    const v = run(form({ manualSymbol: "MSF" }));
+    expect(v.homeRoute).toBeNull();
+    expect(v.destination).toBe("IBIS2");
+    expect(v.prompt).toBe(
+      "Create buy limit order for 10 shares of MSF at 400 and set destination IBIS2",
+    );
+    expect(v.estimate.label).toContain("EUR");
+  });
+
+  it("never applies to a verified listing", () => {
+    const v = deriveHandoff({
+      listings: [msf()],
+      form: form({ manualSymbol: "MSFT" }),
+      defaultDestination: "IBIS2",
+      referencePrice: null,
+      home,
+    });
+    expect(v.homeRoute).toBeNull();
+    expect(v.destination).toBe("IBIS2");
+  });
+});

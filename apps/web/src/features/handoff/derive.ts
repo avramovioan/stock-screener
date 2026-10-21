@@ -61,6 +61,8 @@ export interface HandoffView {
   destination: string;
   destinationOptions: Destination[];
   destinationNote: string | null;
+  /** Set when the prompt routes to the home market (SMART, screening currency); null on every EUR path. */
+  homeRoute: { currency: string; exchangeName: string | null } | null;
   /** Why no prompt is shown yet; null when the prompt is ready. */
   gate: Gate | null;
   errors: { quantity: string | null; price: string | null; symbol: string | null };
@@ -76,6 +78,30 @@ export interface DeriveInput {
   defaultDestination: Destination;
   /** The verified EUR delayed quote, if any: only used to estimate a market order. */
   referencePrice: number | null;
+  /** The screening listing's home ticker: on the `none` path, typing exactly it routes the prompt to SMART in its own currency. */
+  home?: { ticker: string; currency: string | null; exchangeName: string | null } | undefined;
+}
+
+/** The limit-price estimate in the screening currency (a market order has no price here: no home quote is fetched). */
+function homeEstimate(
+  orderType: OrderType,
+  quantity: number,
+  price: number | undefined,
+  currency: string,
+): Estimate {
+  if (
+    orderType !== "limit" ||
+    price === undefined ||
+    !Number.isSafeInteger(quantity) ||
+    quantity <= 0
+  )
+    return { amount: null, basis: null, label: "Estimate before fees: not available" };
+  const amount = Math.round(quantity * price * 100) / 100;
+  return {
+    amount,
+    basis: "limit price",
+    label: `Estimate before fees: ${formatEuro(amount)} ${currency} (${quantity} x ${formatPriceForPrompt(price)}, limit price); commissions not included`,
+  };
 }
 
 export function deriveHandoff(input: DeriveInput): HandoffView {
@@ -97,6 +123,13 @@ export function deriveHandoff(input: DeriveInput): HandoffView {
   const manual = form.manualSymbol.trim().toUpperCase();
   const localSymbol = listing !== null ? listing.localSymbol : manual === "" ? null : manual;
   const conid = listing !== null ? listing.conid : null;
+  const homeRoute =
+    mode === "none" &&
+    input.home !== undefined &&
+    manual !== "" &&
+    manual === input.home.ticker.trim().toUpperCase()
+      ? { currency: input.home.currency ?? "USD", exchangeName: input.home.exchangeName }
+      : null;
 
   const qty = parseQuantityInput(form.quantityText);
   const price = parsePriceInput(form.priceText);
@@ -120,7 +153,20 @@ export function deriveHandoff(input: DeriveInput): HandoffView {
 
   let prompt: string | null = null;
   let documented: HandoffView["documented"] = null;
-  if (gate === null && localSymbol !== null && qty.ok) {
+  if (gate === null && homeRoute !== null && localSymbol !== null && qty.ok) {
+    const at =
+      form.orderType === "limit" && price.ok ? ` at ${formatPriceForPrompt(price.value)}` : "";
+    prompt = `Create ${form.side} ${form.orderType} order for ${qty.value} shares of ${localSymbol}${at} and set destination SMART`;
+    const verb = form.side === "buy" ? "Buy" : "Sell";
+    const tail =
+      form.orderType === "limit" && price.ok
+        ? `at ${formatPriceForPrompt(price.value)} limit`
+        : "at market";
+    documented = {
+      prompt: `${verb} ${qty.value} shares of ${localSymbol} ${tail}`,
+      ticketNote: "On the ticket set the destination to SMART.",
+    };
+  } else if (gate === null && localSymbol !== null && qty.ok) {
     const ibot = {
       side: form.side,
       orderType: form.orderType,
@@ -140,22 +186,33 @@ export function deriveHandoff(input: DeriveInput): HandoffView {
     listing,
     localSymbol,
     conid,
-    destination,
-    destinationOptions: options,
-    destinationNote,
+    destination: homeRoute !== null ? "SMART" : destination,
+    destinationOptions: homeRoute !== null ? [] : options,
+    destinationNote: homeRoute !== null ? null : destinationNote,
+    homeRoute,
     gate,
     errors,
     prompt,
     documented,
-    estimate: estimateValue({
-      orderType: form.orderType,
-      quantity: qty.ok ? qty.value : 0,
-      price: price.ok ? price.value : undefined,
-      referencePrice: input.referencePrice,
-    }),
+    estimate:
+      homeRoute !== null
+        ? homeEstimate(
+            form.orderType,
+            qty.ok ? qty.value : 0,
+            price.ok ? price.value : undefined,
+            homeRoute.currency,
+          )
+        : estimateValue({
+            orderType: form.orderType,
+            quantity: qty.ok ? qty.value : 0,
+            price: price.ok ? price.value : undefined,
+            referencePrice: input.referencePrice,
+          }),
     checklist:
       prompt !== null && localSymbol !== null
-        ? ticketChecklist({ conid, localSymbol, destination })
+        ? homeRoute !== null
+          ? `On the ticket confirm: conid unknown (symbol not verified) / ${localSymbol} / ${homeRoute.currency} / destination SMART`
+          : ticketChecklist({ conid, localSymbol, destination })
         : null,
   };
 }
@@ -225,6 +282,7 @@ export function deriveHeldHandoff({ target, form, route }: DeriveHeldInput): Han
     destination,
     destinationOptions: [],
     destinationNote: null,
+    homeRoute: null,
     gate,
     errors,
     prompt,

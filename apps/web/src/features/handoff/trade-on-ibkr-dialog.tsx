@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQuotes } from "@/features/screening/quotes-hooks";
+import { homeTicker } from "@/lib/format";
 import { deriveHandoff, deriveHeldHandoff, type FormState, INITIAL_FORM } from "./derive";
 import { EurListingPanel } from "./eur-listing-panel";
 import { chooseHeldRoute, type HeldRoute } from "./held-destination";
@@ -85,6 +86,7 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
   const preference = useDefaultDestination();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [priceTouched, setPriceTouched] = useState(false);
+  const [symbolTouched, setSymbolTouched] = useState(false);
   const cooldown = useCooldown(REFRESH_COOLDOWN_SECONDS);
 
   // The delayed EUR quote is requested only for a VERIFIED listing: an unverified line could be a look-alike and must not feed a price.
@@ -101,6 +103,25 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
     if (quotePrice !== null && !priceTouched)
       setForm((f) => ({ ...f, priceText: prefillPrice(quotePrice) }));
   }, [quotePrice, priceTouched]);
+
+  // No EUR listing: the manual symbol starts as the screening listing's home ticker (MSFT, RMS for RMS.PA) until the user edits it.
+  const home = useMemo(
+    () =>
+      screened === null
+        ? undefined
+        : {
+            ticker: homeTicker(screened.symbol, screened.exchangeCode, screened.listingCountry),
+            currency: screened.currency,
+            exchangeName: screened.exchangeName,
+          },
+    [screened],
+  );
+  const noEurListing = listings.isSuccess && (best === null || best.status === "none");
+  const homeTickerValue = home?.ticker ?? null;
+  useEffect(() => {
+    if (noEurListing && homeTickerValue !== null && !symbolTouched)
+      setForm((f) => (f.manualSymbol === "" ? { ...f, manualSymbol: homeTickerValue } : f));
+  }, [noEurListing, homeTickerValue, symbolTouched]);
 
   const preferred: Destination = isDestination(preference.data)
     ? preference.data
@@ -128,9 +149,19 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
             form,
             defaultDestination: preferred,
             referencePrice: quotePrice,
+            home,
           }),
-    [held, heldRoute, listings.data, form, preferred, quotePrice],
+    [held, heldRoute, listings.data, form, preferred, quotePrice, home],
   );
+  // On the home route the untouched price follows the card's close (screening currency); off it, the field goes back to empty.
+  const homeClose = view.homeRoute !== null ? (screened?.closePrice ?? null) : null;
+  useEffect(() => {
+    if (screened !== null && quotePrice === null && !priceTouched)
+      setForm((f) => {
+        const next = homeClose !== null ? prefillPrice(homeClose) : "";
+        return f.priceText === next ? f : { ...f, priceText: next };
+      });
+  }, [screened, quotePrice, priceTouched, homeClose]);
   const position = target.position;
   const heldQty = position?.quantity ?? 0;
   const typedQty = parseQuantityInput(form.quantityText);
@@ -139,12 +170,14 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
   const sharesText = (n: number) => `${SHARE_FORMAT.format(n)} ${n === 1 ? "share" : "shares"}`;
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
-  const prefilled = quotePrice !== null && !priceTouched && form.orderType === "limit";
+  const prefilled =
+    (quotePrice !== null || homeClose !== null) && !priceTouched && form.orderType === "limit";
 
   function reset(next: boolean) {
     if (!next) {
       setForm(INITIAL_FORM);
       setPriceTouched(false);
+      setSymbolTouched(false);
     }
     onOpenChange(next);
   }
@@ -199,7 +232,11 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
                 acknowledged={form.acknowledged}
                 onAcknowledge={(v) => set("acknowledged", v)}
                 manualSymbol={form.manualSymbol}
-                onManualSymbol={(v) => set("manualSymbol", v)}
+                onManualSymbol={(v) => {
+                  setSymbolTouched(true);
+                  set("manualSymbol", v);
+                }}
+                symbolPrefilled={!symbolTouched && view.homeRoute !== null}
                 screeningSymbol={screened.symbol}
                 screeningCurrency={screened.currency}
                 screeningExchange={screened.exchangeName}
@@ -319,7 +356,7 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
                 </div>
                 {form.orderType === "limit" ? (
                   <div className="grid content-start gap-1">
-                    <Label htmlFor="limit-price">{`Limit price (${heldRoute?.currency ?? held?.currency ?? "EUR"})`}</Label>
+                    <Label htmlFor="limit-price">{`Limit price (${view.homeRoute?.currency ?? heldRoute?.currency ?? held?.currency ?? "EUR"})`}</Label>
                     <Input
                       id="limit-price"
                       className="h-11"
@@ -342,7 +379,9 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
                     </p>
                     {prefilled && view.errors.price === null ? (
                       <p className="text-xs text-muted-foreground">
-                        Prefilled from the delayed quote: edit before use.
+                        {view.homeRoute !== null && quotePrice === null
+                          ? "Prefilled from the card's last close: edit before use."
+                          : "Prefilled from the delayed quote: edit before use."}
                       </p>
                     ) : null}
                   </div>
@@ -374,6 +413,10 @@ export function TradeOnIbkrDialog({ open, onOpenChange, target }: TradeOnIbkrDia
                     </p>
                   )}
                 </div>
+              ) : view.homeRoute !== null ? (
+                <p className="text-sm" data-testid="home-destination">
+                  {`Destination: SMART (home market${view.homeRoute.exchangeName ? `, ${view.homeRoute.exchangeName}` : ""})`}
+                </p>
               ) : (
                 <div className="grid gap-1">
                   <Label htmlFor="destination">Destination</Label>
