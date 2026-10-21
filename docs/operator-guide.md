@@ -688,7 +688,7 @@ Run these once with the owner's account and record the results in this section: 
 
 The step-by-step path from the current hosted project to an always-on Cloudflare site is in [cloudflare-go-live.md](cloudflare-go-live.md).
 
-Note: `bun run build` reads the Supabase URL from the environment or from `apps/web/.env*` (`.env`, `.env.local`, `.env.production`, `.env.production.local`), the same way Vite does. In a Cloudflare build set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables. Never hard-code the host in `apps/web/public/_headers`; it keeps the `__SUPABASE_ORIGIN__` placeholders and the build fills them in.
+Note: the web build (Vite) renders `dist/_headers` itself: the `__SUPABASE_ORIGIN__` placeholders in `apps/web/public/_headers` become the https and wss origins of `VITE_SUPABASE_URL`, and the build fails with "VITE_SUPABASE_URL is missing or invalid" instead of shipping a CSP that blocks Supabase. Whether you run `bun run build` at the repository root or in `apps/web`, the same values must be available: in Cloudflare set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables; locally put them in `apps/web/.env.local` (Vite also reads `.env`, `.env.production`, `.env.production.local`). Never hard-code the host in `apps/web/public/_headers`.
 
 One-time Cloudflare setup:
 
@@ -700,9 +700,9 @@ One-time Cloudflare setup:
    the Worker `stock-screener` (name in `apps/web/wrangler.jsonc`) with static assets and the SPA fallback.
 5. Attach a custom domain in the Cloudflare dashboard (Workers & Pages -> stock-screener -> Settings ->
    Domains) and set the repository variable `VITE_SITE_URL` to it.
-6. The Content-Security-Policy in `apps/web/public/_headers` is enforced. `__SUPABASE_ORIGIN__` is replaced after every build with the
-   origin of `VITE_SUPABASE_URL` (`bun run render:headers`, verified by `bun run check:headers`); the deploy workflow therefore
-   needs no manual edit. Strict-Transport-Security is not in the file: in the Cloudflare dashboard open SSL/TLS, Edge Certificates and
+6. The Content-Security-Policy in `apps/web/public/_headers` is enforced. `__SUPABASE_ORIGIN__` is rendered by the web build itself with the
+   origin of `VITE_SUPABASE_URL` (the build fails when it is missing; `bun run check:headers` verifies the root build); the deploy
+   workflow therefore needs no manual edit. Strict-Transport-Security is not in the file: in the Cloudflare dashboard open SSL/TLS, Edge Certificates and
    enable HSTS (max-age at least 6 months, include subdomains only when every subdomain is https). Check the result with
    `curl.exe -sI https://<your domain>` (look for `content-security-policy` and `strict-transport-security`).
 

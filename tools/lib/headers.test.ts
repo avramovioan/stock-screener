@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  buildHeaders,
   headerProblems,
   matchHeaders,
   ORIGIN_TOKEN,
@@ -201,5 +202,30 @@ describe("the committed apps/web/public/_headers", () => {
     expect(headerProblems(parseHeadersFile(committed), { mode: "template" })).toEqual([]);
     const { text } = renderHeaders(committed, ORIGIN);
     expect(headerProblems(parseHeadersFile(text), rendered)).toEqual([]);
+  });
+});
+
+describe("buildHeaders (decision used by the Vite build)", () => {
+  const template = "/*\n  CSP: connect-src 'self' __SUPABASE_ORIGIN__ __SUPABASE_WS_ORIGIN__\n";
+  it("renders the https and wss origins for a valid URL", () => {
+    const out = buildHeaders(template, "https://abc.supabase.co", { mode: "production" });
+    expect(out.text).toContain("'self' https://abc.supabase.co wss://abc.supabase.co");
+  });
+  it("fails a production build when the URL is missing", () => {
+    expect(() => buildHeaders(template, undefined, { mode: "production" })).toThrow(
+      "VITE_SUPABASE_URL is missing or invalid: dist/_headers would block Supabase",
+    );
+  });
+  it("fails a production build when the URL is not https", () => {
+    expect(() => buildHeaders(template, "http://x.test", { mode: "production" })).toThrow(
+      /missing or invalid/,
+    );
+  });
+  it("falls back to the placeholder outside production", () => {
+    expect(buildHeaders(template, undefined, { mode: "development" }).placeholder).toBe(true);
+  });
+  it("falls back to the placeholder in production only on explicit opt-in", () => {
+    const out = buildHeaders(template, undefined, { mode: "production", allowPlaceholder: true });
+    expect(out.placeholder).toBe(true);
   });
 });

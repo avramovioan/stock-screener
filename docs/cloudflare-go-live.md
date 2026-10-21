@@ -320,7 +320,7 @@ bunx wrangler@4.151.0 deploy
 cd ../..
 ```
 
-Note: `bun run build` reads the Supabase URL from the environment or from `apps/web/.env*` (`.env`, `.env.local`, `.env.production`, `.env.production.local`), the same way Vite does. In a Cloudflare build set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables. Never hard-code the host in `apps/web/public/_headers`; it keeps the `__SUPABASE_ORIGIN__` placeholders and the build fills them in.
+Note: the web build (Vite) renders `dist/_headers` itself: the `__SUPABASE_ORIGIN__` placeholders in `apps/web/public/_headers` become the https and wss origins of `VITE_SUPABASE_URL`, and the build fails with "VITE_SUPABASE_URL is missing or invalid" instead of shipping a CSP that blocks Supabase. Whether you run `bun run build` at the repository root or in `apps/web`, the same values must be available: in Cloudflare set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables; locally put them in `apps/web/.env.local` (Vite also reads `.env`, `.env.production`, `.env.production.local`). Never hard-code the host in `apps/web/public/_headers`.
 
 ## F. Point the backend at the site
 
