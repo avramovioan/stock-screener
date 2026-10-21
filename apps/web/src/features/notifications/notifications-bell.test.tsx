@@ -12,7 +12,7 @@ import {
 import { NotificationsBell } from "./notifications-bell";
 import type { BrowserPush } from "./push-client";
 import type { SupportEnv } from "./push-support";
-import { readStoredTopics } from "./topic-store";
+import { keyFingerprint, readStoredTopics, writeStoredKeyFingerprint } from "./topic-store";
 
 const ENDPOINT = "https://push.example/e1";
 const SUB_JSON = { endpoint: ENDPOINT, keys: { p256dh: "k", auth: "a" } };
@@ -47,6 +47,7 @@ interface Options {
 }
 
 function setup(options: Options = {}) {
+  writeStoredKeyFingerprint(keyFingerprint("AQID"));
   const env: SupportEnv = { ...(options.base ?? DESKTOP), ...options.env };
   let live = options.live ?? false;
   const sub = {
@@ -242,6 +243,21 @@ describe("test and turn off", () => {
     fireEvent.click(test);
     await waitFor(() => expect(discounts().getAttribute("aria-checked")).toBe("false"));
     expect(screen.queryByRole("button", { name: "Send a test notification" })).toBeNull();
+  });
+
+  it.each([
+    [{ reason: "server_keys" }, /server's push keys are not set up correctly/i],
+    [{ reason: "rejected", status: 403 }, /does not match the server key/i],
+    [{ reason: "network" }, /push service could not be reached/i],
+    [{ reason: "rejected", status: 500 }, /could not be delivered/i],
+    [{}, /could not be delivered/i],
+  ])("explains a failed test (%j)", async (extra, text) => {
+    const { api } = setup();
+    fireEvent.click(bell());
+    const test = await screen.findByRole("button", { name: "Send a test notification" });
+    api.sendTest.mockResolvedValueOnce({ sent: 0, failed: 1, ...extra });
+    fireEvent.click(test);
+    expect(await screen.findByText(text)).toBeTruthy();
   });
 
   it("turns this phone off: browser and server, and the switches go off", async () => {

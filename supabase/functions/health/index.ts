@@ -1,5 +1,6 @@
 import { createServiceClient } from "@adapters/db.ts";
 import { json } from "@adapters/http.ts";
+import { checkPushConfig } from "@adapters/push.ts";
 import { handleHealth } from "./handler.ts";
 import { healthDetail } from "./status.ts";
 
@@ -10,7 +11,7 @@ Deno.serve(async (req) => {
   const detail = await healthDetail(createServiceClient());
   const body = (await base.json()) as Record<string, unknown>;
   return json(
-    { ...body, ...detail, ok: body["ok"] === true && detail.ok },
+    { ...body, ...detail, push: await checkPushConfig(), ok: body["ok"] === true && detail.ok },
     { status: detail.ok ? 200 : 503, headers: base.headers },
   );
 });

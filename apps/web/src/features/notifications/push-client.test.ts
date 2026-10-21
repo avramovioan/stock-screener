@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_TOPICS,
   type NotificationsApi,
@@ -11,16 +11,28 @@ import {
   enablePush,
   liveEndpoint,
   reconcilePush,
+  renewStaleSubscription,
 } from "./push-client";
+import { keyFingerprint, readStoredKeyFingerprint, writeStoredKeyFingerprint } from "./topic-store";
 
 const KEY = "AQID";
+beforeEach(() => localStorage.clear());
 const json = { endpoint: "https://push.example/e1", keys: { p256dh: "k", auth: "a" } };
 const BOTH: Topics = { discounts: true, portfolio: true };
 
 function fakes(
-  over: { permission?: NotificationPermission; existing?: boolean; subscribeError?: Error } = {},
+  over: {
+    permission?: NotificationPermission;
+    existing?: boolean;
+    subscribeError?: Error;
+    existingKey?: number[];
+  } = {},
 ) {
   const sub = {
+    options:
+      over.existingKey === undefined
+        ? undefined
+        : { applicationServerKey: new Uint8Array(over.existingKey).buffer },
     endpoint: json.endpoint,
     toJSON: () => json,
     unsubscribe: vi.fn().mockResolvedValue(true),
@@ -89,6 +101,7 @@ describe("enablePush", () => {
   });
 
   it("reuses an existing browser subscription and reports subscribe and server failures", async () => {
+    writeStoredKeyFingerprint(keyFingerprint(KEY));
     const reuse = fakes({ existing: true });
     expect((await enablePush(reuse.browser, reuse.api, KEY, DEFAULT_TOPICS)).ok).toBe(true);
     expect(reuse.pushManager.subscribe).not.toHaveBeenCalled();
@@ -103,6 +116,41 @@ describe("enablePush", () => {
       ok: false,
       reason: "server_failed",
     });
+  });
+
+  it("replaces a subscription made with another key by one made with the current key", async () => {
+    const { browser, api, pushManager, sub } = fakes({ existing: true, existingKey: [9, 9, 9] });
+    expect((await enablePush(browser, api, KEY, DEFAULT_TOPICS)).ok).toBe(true);
+    expect(sub.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(pushManager.subscribe).toHaveBeenCalledWith({
+      userVisibleOnly: true,
+      applicationServerKey: new Uint8Array([1, 2, 3]),
+    });
+  });
+
+  it("keeps a subscription made with the current key", async () => {
+    const { browser, api, pushManager, sub } = fakes({ existing: true, existingKey: [1, 2, 3] });
+    expect((await enablePush(browser, api, KEY, DEFAULT_TOPICS)).ok).toBe(true);
+    expect(sub.unsubscribe).not.toHaveBeenCalled();
+    expect(pushManager.subscribe).not.toHaveBeenCalled();
+  });
+
+  it("options missing: a stored fingerprint of the current key keeps the subscription", async () => {
+    writeStoredKeyFingerprint(keyFingerprint(KEY));
+    const { browser, api, pushManager, sub } = fakes({ existing: true });
+    expect((await enablePush(browser, api, KEY, DEFAULT_TOPICS)).ok).toBe(true);
+    expect(sub.unsubscribe).not.toHaveBeenCalled();
+    expect(pushManager.subscribe).not.toHaveBeenCalled();
+  });
+
+  it("options missing and no fingerprint: re-subscribes once and stores the fingerprint", async () => {
+    const { browser, api, pushManager, sub } = fakes({ existing: true });
+    expect((await enablePush(browser, api, KEY, DEFAULT_TOPICS)).ok).toBe(true);
+    expect(sub.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(pushManager.subscribe).toHaveBeenCalledTimes(1);
+    expect(readStoredKeyFingerprint()).toBe(keyFingerprint(KEY));
+    expect(await enablePush(browser, api, KEY, DEFAULT_TOPICS)).toMatchObject({ ok: true });
+    expect(pushManager.subscribe).toHaveBeenCalledTimes(1); // the second run keeps it
   });
 
   it("reports the per-account device limit separately", async () => {
@@ -161,5 +209,32 @@ describe("reconcilePush (page visit)", () => {
     expect(await reconcilePush(browser, api, undefined, "granted")).toBe("skipped");
     expect(api.status).not.toHaveBeenCalled();
     expect(api.subscribe).not.toHaveBeenCalled();
+  });
+});
+
+describe("renewStaleSubscription (key rotation heals itself)", () => {
+  it("replaces a stale subscription the server knows, keeping its topics", async () => {
+    const { browser, api, pushManager, sub } = fakes({ existing: true, existingKey: [9, 9, 9] });
+    expect(await renewStaleSubscription(browser, api, KEY)).toBe(true);
+    expect(sub.unsubscribe).toHaveBeenCalledTimes(1);
+    expect(pushManager.subscribe).toHaveBeenCalledTimes(1);
+    expect(api.subscribe).toHaveBeenCalledWith(json, BOTH);
+  });
+
+  it("does nothing for a current key, for a device that is off, and for one the server does not know", async () => {
+    const current = fakes({ existing: true, existingKey: [1, 2, 3] });
+    expect(await renewStaleSubscription(current.browser, current.api, KEY)).toBe(false);
+    const off = fakes({ existing: false });
+    expect(await renewStaleSubscription(off.browser, off.api, KEY)).toBe(false);
+    const unknown = fakes({ existing: true, existingKey: [9, 9, 9] });
+    unknown.api.status.mockResolvedValue({ subscribed: false, topics: null });
+    expect(await renewStaleSubscription(unknown.browser, unknown.api, KEY)).toBe(false);
+    expect(unknown.sub.unsubscribe).not.toHaveBeenCalled();
+  });
+
+  it("runs on page load through reconcilePush", async () => {
+    const { browser, api, pushManager } = fakes({ existing: true, existingKey: [9, 9, 9] });
+    expect(await reconcilePush(browser, api, KEY, "granted")).toBe("synced");
+    expect(pushManager.subscribe).toHaveBeenCalledTimes(1);
   });
 });

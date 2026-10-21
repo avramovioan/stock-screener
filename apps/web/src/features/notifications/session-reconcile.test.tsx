@@ -9,11 +9,13 @@ import {
   resetSessionReconcile,
   type SessionReconcileDeps,
 } from "./session-reconcile";
+import { keyFingerprint, writeStoredKeyFingerprint } from "./topic-store";
 
 const SUB_JSON = { endpoint: "https://push.example/e1", keys: { p256dh: "k", auth: "a" } };
 const tick = () => new Promise((resolve) => setTimeout(resolve, 20));
 
 function setup(over: { permission?: NotificationPermission | null } = {}) {
+  writeStoredKeyFingerprint(keyFingerprint("AQID"));
   const sub = { endpoint: SUB_JSON.endpoint, toJSON: () => SUB_JSON, unsubscribe: vi.fn() };
   const browser: BrowserPush = {
     requestPermission: vi.fn(),

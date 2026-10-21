@@ -551,7 +551,39 @@ The change takes effect at the next scan (operator guide 8.1).
 | Strangers can create accounts | Public sign-up is on | B1. Then check Authentication, Users. |
 | Blank page after a deep link refresh | Old cache or a failed deploy | Hard refresh (Ctrl+F5). Check that Deploy web is green. |
 | No pushes arrive anywhere | Key mismatch, or no fresh scan yet | Compare the two VAPID keys, then send a test from the bell. Digests go out only when something is new. |
+| Bell test says "The server's push keys are not set up correctly." | The hosted `VAPID_*` secrets are missing, not JSON, or the public key does not pair with the private key | Run the `health` curl in "Re-set the push keys" and read `push.problem`. Then re-set the keys the safe way. |
+| Bell test says "This phone's subscription does not match the server key." | The push service answered 403: the phone subscribed with an older key | Turn notifications off and on again on that phone. The app now replaces such a subscription by itself when you turn it on. |
+| Bell test says "The push service could not be reached." | The function could not connect to the phone's push service | Try again. If it repeats, check the Supabase function logs for `push_test_failed`. |
+| Bell test says "This phone is not registered any more." | The push service answered 404 or 410: the subscription is gone | Turn a switch on to register the phone again. |
 | Pushes stopped after a domain change | Subscriptions are tied to the address | Turn notifications on again (Part H). |
 | Keep-alive run is skipped | `KEEPALIVE_ENABLED` is not `true` | Part I. |
 | Keep-alive run is red | Wrong credentials, a stale scan, or `health` is not ok | Read the log. Operator guide 12. |
 | Supabase project is paused | No activity for a week | Dashboard, the project, Resume. Keep-alive prevents this. |
+
+### Re-set the push keys
+
+Use this when `health` reports a `push.problem`, or after any key change. Set all three secrets from one file. Never type the private key JSON on the command line: PowerShell strips its quotes.
+
+- [ ] Generate new keys into a git-ignored file (use your own address):
+
+```powershell
+bun run gen:vapid -- mailto:<you> --out supabase/functions/.env.vapid
+```
+
+- [ ] Set all three secrets from that file:
+
+```powershell
+bunx supabase secrets set --env-file supabase/functions/.env.vapid --project-ref pkfptuwwgyvjxvumqika
+```
+
+- [ ] Copy the public key (`VAPID_PUBLIC_KEY` in that file) into the GitHub repository variable `VITE_VAPID_PUBLIC_KEY`, then delete `supabase/functions/.env.vapid`.
+- [ ] Redeploy the web app (run Deploy web) so the new public key is in the bundle.
+- [ ] Check the server side. The `push` field must read `configured: true` and `problem: null`:
+
+```powershell
+curl.exe -s https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/health
+```
+
+Problem codes: `public_missing`, `private_missing`, `subject_missing`, `subject_invalid` (must start with `mailto:` or `https://`), `private_not_json` (quotes lost), `private_not_jwk`, `private_invalid`, `key_mismatch` (public and private keys do not pair).
+
+- [ ] Every device: bell, "Turn off on this phone", then turn notifications on again. Old subscriptions belong to the old key.

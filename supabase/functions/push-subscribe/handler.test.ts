@@ -266,8 +266,34 @@ Deno.test("test: a gone endpoint is marked gone and counted as failed", async ()
   const { deps, store } = setup(() => ({ ok: false, kind: "gone", status: 410 }));
   store.target = { id: "s2", endpoint: ENDPOINT, p256dh: "k", auth: "a" };
   const res = await handlePushSubscribe(post({ action: "test", endpoint: ENDPOINT }), deps);
-  assertEquals(await res.json(), { ok: true, sent: 0, failed: 1 });
+  assertEquals(await res.json(), { ok: true, sent: 0, failed: 1, reason: "rejected", status: 410 });
   assertEquals(store.marks, [{ id: "s2", outcome: "gone" }]);
+});
+
+Deno.test("test: a VAPID configuration error answers 200 with reason server_keys", async () => {
+  const { deps, store } = setup(() => {
+    throw new Error("VAPID_PUBLIC_KEY does not match VAPID_PRIVATE_KEY");
+  });
+  store.target = { id: "s3", endpoint: ENDPOINT, p256dh: "k", auth: "a" };
+  const res = await handlePushSubscribe(post({ action: "test", endpoint: ENDPOINT }), deps);
+  assertEquals(res.status, 200);
+  assertEquals(await res.json(), { ok: true, sent: 0, failed: 1, reason: "server_keys" });
+  assertEquals(store.marks, [{ id: "s3", outcome: "failure" }]);
+});
+
+Deno.test("test: a push service rejection carries its status (403 = key mismatch)", async () => {
+  const { deps, store } = setup(() => ({ ok: false, kind: "http", status: 403 }));
+  store.target = { id: "s4", endpoint: ENDPOINT, p256dh: "k", auth: "a" };
+  const res = await handlePushSubscribe(post({ action: "test", endpoint: ENDPOINT }), deps);
+  assertEquals(await res.json(), { ok: true, sent: 0, failed: 1, reason: "rejected", status: 403 });
+  assertEquals(store.marks, [{ id: "s4", outcome: "failure" }]);
+});
+
+Deno.test("test: a network error carries reason network", async () => {
+  const { deps, store } = setup(() => ({ ok: false, kind: "network" }));
+  store.target = { id: "s5", endpoint: ENDPOINT, p256dh: "k", auth: "a" };
+  const res = await handlePushSubscribe(post({ action: "test", endpoint: ENDPOINT }), deps);
+  assertEquals(await res.json(), { ok: true, sent: 0, failed: 1, reason: "network" });
 });
 
 Deno.test("test is rate limited per endpoint (429) and an unknown endpoint is a 404", async () => {

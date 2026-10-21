@@ -90,6 +90,19 @@ describe("createNotificationsApi", () => {
     });
   });
 
+  it("passes the failure reason and status of a test through", async () => {
+    const { api } = fakeClient({
+      data: { ok: true, sent: 0, failed: 1, reason: "rejected", status: 403 },
+      error: null,
+    });
+    expect(await api.sendTest("https://push.example/e1")).toEqual({
+      sent: 0,
+      failed: 1,
+      reason: "rejected",
+      status: 403,
+    });
+  });
+
   it.each([
     [409, "too_many_subscriptions"],
     [404, "not_found"],

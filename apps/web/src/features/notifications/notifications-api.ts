@@ -30,13 +30,21 @@ export class NotificationsApiError extends Error {
   }
 }
 
+export interface TestOutcome {
+  sent: number;
+  failed: number;
+  /** why a failed test failed: server_keys, rejected (with status) or network */
+  reason?: string;
+  status?: number;
+}
+
 /** Device-keyed API of the `push-subscribe` function: no account is needed, a JWT only binds the row to a user. */
 export interface NotificationsApi {
   subscribe(subscription: PushSubscriptionJSON, topics?: Topics): Promise<Topics>;
   update(endpoint: string, topics: Topics): Promise<Topics>;
   status(endpoint: string): Promise<DeviceStatus>;
   unsubscribe(endpoint: string): Promise<void>;
-  sendTest(endpoint: string): Promise<{ sent: number; failed: number }>;
+  sendTest(endpoint: string): Promise<TestOutcome>;
 }
 
 type Client = Pick<SupabaseClient, "functions">;
@@ -89,6 +97,8 @@ export function createNotificationsApi(client: Client): NotificationsApi {
       return {
         sent: typeof data.sent === "number" ? data.sent : 0,
         failed: typeof data.failed === "number" ? data.failed : 0,
+        ...(typeof data.reason === "string" ? { reason: data.reason } : {}),
+        ...(typeof data.status === "number" ? { status: data.status } : {}),
       };
     },
   };
