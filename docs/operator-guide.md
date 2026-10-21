@@ -590,6 +590,26 @@ Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/fu
 Good answer: `ok: True`, `telegram_status: 200`, `description: sent`. The group shows "Test message from the stock screener."
 The call always answers HTTP 200. Read `ok` and `description` to see what Telegram said. A failed call writes no audit row.
 
+**Send the latest digest now.** Use this when the group got nothing (for example a send failed or the bot was set up after the scan).
+It takes the latest public digest that is ready and younger than 24 hours. It adds the Telegram message if there is none, tries again
+a failed or skipped one, and does nothing for one that was already sent. The group gets the message within a minute.
+
+```powershell
+$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
+$secret = [System.Net.NetworkCredential]::new("", $s).Password
+Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" -SkipHttpErrorCheck `
+  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_send_latest"}'
+```
+
+Answers (always HTTP 200 for these):
+- `ok: True`, `queued: True`, `digest_id`, `scan_date`, `note: sends within a minute`: it is queued.
+- `queued: False`, `reason: already_sent`: the group already has it.
+- `queued: False`, `reason: no_ready_digest`: no ready digest in the last 24 hours (nothing new, or the scan is not done).
+- `queued: False`, `reason: not_configured`: set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` first.
+
+This needs the fix `bunx supabase db push` (migration 20261015009900) and a redeploy of `scan-control`. The same fix makes the minute check
+pick up Telegram messages and their retries on their own.
+
 **7. What a real message looks like.** The headline has the date of the scan in Sofia time. Each company is one line: ticker, name, rank
 and the line it sits at. At most 20 lines are shown, then `…and N more`. A link to the site closes the message.
 

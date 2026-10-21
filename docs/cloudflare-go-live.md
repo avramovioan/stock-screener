@@ -524,6 +524,22 @@ Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/fu
 Check: the answer says `ok: True`, `telegram_status: 200`, `description: sent`, and the group shows "Test message from the stock screener."
 The call always answers HTTP 200. Read `ok` and `description` for Telegram's own answer.
 
+#### Send the latest digest now
+
+Use it when the group got nothing. It takes the latest public digest that is ready and younger than 24 hours, queues its Telegram message
+(or tries a failed or skipped one again) and does nothing when it was already sent. The group gets it within a minute.
+
+```powershell
+$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
+$secret = [System.Net.NetworkCredential]::new("", $s).Password
+Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" -SkipHttpErrorCheck `
+  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_send_latest"}'
+```
+
+Check: `ok: True` and `queued: True` with `digest_id`, `scan_date` and `note: sends within a minute`. Other answers: `queued: False` with
+`reason` `already_sent`, `no_ready_digest` (no ready digest in the last 24 hours) or `not_configured` (a secret is missing).
+Needs `bunx supabase db push` (migration 20261015009900) and a redeploy of `scan-control`.
+
 ### Hb7. What a real message looks like, and when it comes
 
 ```text

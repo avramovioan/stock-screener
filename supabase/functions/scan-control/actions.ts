@@ -6,6 +6,7 @@ import type { TelegramResult } from "../_shared/adapters/telegram.ts";
 import { scanDateLocal } from "../_shared/core/calendar.ts";
 import { researchNow } from "./actions/research_now.ts";
 import { telegramTest } from "./actions/telegram_probe.ts";
+import { telegramSendLatest } from "./actions/telegram_send_latest.ts";
 import type { Parsed } from "./validate.ts";
 
 export interface Actor {
@@ -246,6 +247,9 @@ export async function execute(
 
     case "telegram_test":
       return { ...(await telegramTest({ telegram: deps.telegram })) };
+
+    case "telegram_send_latest":
+      return { ...(await telegramSendLatest({ sb, configured: deps.telegram !== null })) };
 
     case "research_now": {
       // operator request (spec 7.12): one manual full report for a security, queued in the latest scan run

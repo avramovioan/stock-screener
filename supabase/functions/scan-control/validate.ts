@@ -13,6 +13,7 @@ export const ACTIONS = [
   "override",
   "research_now",
   "telegram_test",
+  "telegram_send_latest",
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
@@ -53,6 +54,7 @@ export type Parsed =
     }
   | { ok: true; action: "research_now"; securityId: string; force: boolean }
   | { ok: true; action: "telegram_test" }
+  | { ok: true; action: "telegram_send_latest" }
   | { ok: false; error: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -144,6 +146,8 @@ export function parseRequest(body: unknown): Parsed {
         reason,
       };
     }
+    case "telegram_send_latest":
+      return { ok: true, action: "telegram_send_latest" };
     case "telegram_test":
       return { ok: true, action: "telegram_test" };
     case "research_now": {
