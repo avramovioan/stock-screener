@@ -1,7 +1,7 @@
 $ bun run check:headers
 exit code: 0
-duration: 1.0 s
-finished: 2026-10-16T13:50:22.664Z
+duration: 0.8 s
+finished: 2026-10-17T08:59:53.505Z
 --- last 120 lines ---
 check:headers: OK (rendered)
 $ bun run tools/check-headers.ts

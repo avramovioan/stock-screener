@@ -1,21 +1,21 @@
 $ bun run build
 exit code: 0
-duration: 7.7 s
-finished: 2026-10-16T13:50:20.487Z
+duration: 8.2 s
+finished: 2026-10-17T08:59:51.519Z
 --- last 120 lines ---
 @screener/web build: vite v8.3.4 building client environment for production...
 @screener/web build: transforming...
-@screener/web build: ✓ 2699 modules transformed.
+@screener/web build: ✓ 2700 modules transformed.
 @screener/web build: rendering chunks...
 @screener/web build: computing gzip size...
-@screener/web build: dist/index.html                                                1.06 kB │ gzip:   0.52 kB
+@screener/web build: dist/index.html                                                1.06 kB │ gzip:   0.53 kB
 @screener/web build: dist/assets/ibm-plex-sans-latin-400-normal-CDDApCn2.woff2     22.58 kB
 @screener/web build: dist/assets/ibm-plex-sans-latin-500-normal-6ng42L7E.woff2     24.18 kB
 @screener/web build: dist/assets/ibm-plex-sans-latin-600-normal-CuJfVYMP.woff2     24.25 kB
-@screener/web build: dist/assets/index-Dlk3rrhg.css                                69.82 kB │ gzip:  12.65 kB
+@screener/web build: dist/assets/index-RkTZn9aN.css                                69.99 kB │ gzip:  12.68 kB
 @screener/web build: dist/assets/sw-messages-B4tcRBpC.js                            0.22 kB │ gzip:   0.19 kB
 @screener/web build: dist/assets/workbox-window.prod.es5-Bd17z0YL.js                5.65 kB │ gzip:   2.20 kB
-@screener/web build: dist/assets/index-RuiAv80D.js                              1,360.69 kB │ gzip: 409.98 kB
+@screener/web build: dist/assets/index-BX10-VyU.js                              1,363.64 kB │ gzip: 410.85 kB
 @screener/web build: 
 @screener/web build: [plugin builtin:vite-reporter] 
 @screener/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
@@ -26,7 +26,7 @@ finished: 2026-10-16T13:50:20.487Z
 @screener/web build: 
 @screener/web build: [INEFFECTIVE_DYNAMIC_IMPORT] src/features/notifications/notifications-api.ts is dynamically imported by src/features/notifications/session-reconcile.tsx, src/register-sw.ts but also statically imported by src/features/profile/panels/notifications-panel.tsx, dynamic import will not move module into another chunk.
 @screener/web build: 
-@screener/web build: ✓ built in 932ms
+@screener/web build: ✓ built in 965ms
 @screener/web build: 
 @screener/web build: PWA v2.0.0
 @screener/web build: Building src/sw.ts service worker ("es" format)...
@@ -40,12 +40,12 @@ finished: 2026-10-16T13:50:20.487Z
 @screener/web build: computing gzip size...
 @screener/web build: dist/sw.mjs  19.32 kB │ gzip: 6.68 kB
 @screener/web build: 
-@screener/web build: ✓ built in 43ms
+@screener/web build: ✓ built in 54ms
 @screener/web build: 
 @screener/web build: PWA v2.0.0
 @screener/web build: mode      injectManifest
 @screener/web build: format:   es
-@screener/web build: precache  16 entries (1510.58 KiB)
+@screener/web build: precache  16 entries (1513.63 KiB)
 @screener/web build: files generated
 @screener/web build:   dist/sw.js
 @screener/web build: Exited with code 0

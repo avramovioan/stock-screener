@@ -1,138 +1,138 @@
 {
-  "at": "2026-10-16T13:58:56.576Z",
-  "commit": "0f6b542",
+  "at": "2026-10-17T09:00:40.682Z",
+  "commit": "6c27069",
   "results": [
     {
       "name": "lint",
       "command": "bun run lint",
       "exitCode": 0,
-      "durationMs": 3768,
-      "summary": "694 files checked"
+      "durationMs": 3422,
+      "summary": "705 files checked"
     },
     {
       "name": "lint-workflows",
       "command": "bun run lint:workflows",
       "exitCode": 0,
-      "durationMs": 1046,
+      "durationMs": 1238,
       "summary": ""
     },
     {
       "name": "typecheck",
       "command": "bun run typecheck",
       "exitCode": 0,
-      "durationMs": 20243,
+      "durationMs": 17231,
       "summary": ""
     },
     {
       "name": "test-core",
       "command": "bun run test:core",
       "exitCode": 0,
-      "durationMs": 9263,
-      "summary": "470 tests passed"
+      "durationMs": 9027,
+      "summary": "620 tests passed"
     },
     {
       "name": "test-tools",
       "command": "bun run test:tools",
       "exitCode": 0,
-      "durationMs": 7966,
-      "summary": "161 tests passed"
+      "durationMs": 8101,
+      "summary": "165 tests passed"
     },
     {
       "name": "test-web",
       "command": "bun run test:web",
       "exitCode": 0,
-      "durationMs": 65525,
-      "summary": "1035 tests passed"
+      "durationMs": 62253,
+      "summary": "1056 tests passed"
     },
     {
       "name": "check-functions-config",
       "command": "bun run check:functions-config",
       "exitCode": 0,
-      "durationMs": 946,
+      "durationMs": 879,
       "summary": ""
     },
     {
       "name": "functions-check",
       "command": "bun run functions:check",
       "exitCode": 0,
-      "durationMs": 3849,
+      "durationMs": 7394,
       "summary": ""
     },
     {
       "name": "functions-test",
       "command": "bun run functions:test",
       "exitCode": 0,
-      "durationMs": 19189,
-      "summary": "650 passed, 0 failed"
+      "durationMs": 21375,
+      "summary": "686 passed, 0 failed"
     },
     {
       "name": "functions-selftest",
       "command": "bun run functions:selftest",
       "exitCode": 0,
-      "durationMs": 4846,
+      "durationMs": 10341,
       "summary": ""
     },
     {
       "name": "check-fetch",
       "command": "bun run check:fetch",
       "exitCode": 0,
-      "durationMs": 937,
+      "durationMs": 1109,
       "summary": ""
     },
     {
       "name": "check-secrets",
       "command": "bun run check:secrets",
       "exitCode": 0,
-      "durationMs": 968,
+      "durationMs": 1152,
       "summary": ""
     },
     {
       "name": "audit",
       "command": "bun run audit",
       "exitCode": 0,
-      "durationMs": 50074,
+      "durationMs": 36413,
       "summary": ""
     },
     {
       "name": "build",
       "command": "bun run build",
       "exitCode": 0,
-      "durationMs": 7675,
+      "durationMs": 8226,
       "summary": ""
     },
     {
       "name": "check-bundle",
       "command": "bun run check:bundle",
       "exitCode": 0,
-      "durationMs": 1191,
+      "durationMs": 1141,
       "summary": ""
     },
     {
       "name": "check-headers",
       "command": "bun run check:headers",
       "exitCode": 0,
-      "durationMs": 984,
+      "durationMs": 843,
       "summary": ""
     },
     {
       "name": "test-e2e",
       "command": "bun run test:e2e",
       "exitCode": 0,
-      "durationMs": 52149,
-      "summary": "40 passed"
+      "durationMs": 47102,
+      "summary": "44 passed"
     },
     {
       "name": "test-db",
       "command": "bun run test:db",
       "exitCode": 0,
-      "durationMs": 6570,
-      "summary": "29 files, 1321 tests, PASS"
+      "durationMs": 6522,
+      "summary": "32 files, 1366 tests, PASS"
     },
     {
       "name": "test-integration",
       "command": "bun run test:integration",
       "exitCode": 0,
-      "durationMs": 132633,
+      "durationMs": 126567,
       "summary": ""
     },
     {

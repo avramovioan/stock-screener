@@ -1,8 +1,8 @@
 $ bun run typecheck
 exit code: 0
-duration: 20.2 s
-finished: 2026-10-16T13:47:17.076Z
+duration: 17.2 s
+finished: 2026-10-17T08:58:41.038Z
 --- last 120 lines ---
-core purity: OK (20 files scanned, 6 canary globals rejected)
+core purity: OK (22 files scanned, 6 canary globals rejected)
 $ tsc -p apps/web --noEmit && tsc -p supabase/functions/_shared/core --noEmit && tsc -p tsconfig.json --noEmit && bun run tools/check-core-purity.ts
 

@@ -1,7 +1,7 @@
 $ bun run audit
 exit code: 0
-duration: 50.1 s
-finished: 2026-10-16T13:50:12.811Z
+duration: 36.4 s
+finished: 2026-10-17T08:51:34.983Z
 --- last 120 lines ---
 audit: 0 advisories (0 high or critical), 3 Deno npm packages
 audit: OK

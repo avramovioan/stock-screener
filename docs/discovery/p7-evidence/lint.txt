@@ -1,7 +1,7 @@
 $ bun run lint
 exit code: 0
-duration: 3.8 s
-finished: 2026-10-16T13:46:55.783Z
+duration: 3.4 s
+finished: 2026-10-17T08:58:23.804Z
 --- last 120 lines ---
   ! Forbidden non-null assertion.
   
