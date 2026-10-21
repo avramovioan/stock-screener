@@ -434,6 +434,120 @@ A device registered before you signed in stays anonymous until you sign in on it
 | "Too many devices" | The account has reached its device limit | Turn off notifications on a device you no longer use, then try again. |
 | The test gives an error | The keys differ, or the subscription was revoked | Turn off, then on again. Compare the keys (D3). Operator guide 4.6. |
 
+## Hb. Optional: Telegram group
+
+Skip this part if you do not want a Telegram group message. Do it after Part H. Nothing else depends on it.
+
+The group gets one message per scan run, only when something is new. It follows the same rules as the phone digest. Holdings alerts never go to Telegram. Full details and the error table: operator guide 4.8.
+
+### Hb1. Create the bot
+
+- [ ] In Telegram, open `@BotFather` and send `/newbot`.
+- [ ] Send a display name, for example `Stock Screener`.
+- [ ] Send a username. It must end in `bot`, for example `my_stock_screener_bot`.
+- [ ] Copy the token from BotFather's answer. Treat it like a password. Never paste it into a chat or a ticket.
+
+### Hb2. Add the bot to the group
+
+- [ ] Open the group, tap the group name, tap "Add members", search for the bot's username, add it.
+- [ ] Send any message in the group, for example `hello`.
+
+### Hb3. Find the chat id
+
+- [ ] Open this address in a browser, with your own token in place of `<token>`: `https://api.telegram.org/bot<token>/getUpdates`
+- [ ] Find `"chat":{"id":-100...`. Copy the number with its minus sign.
+
+Check: you have a negative number, and a supergroup number starts with `-100`.
+If the answer is `"result":[]`, send another message in the group and reload the page.
+If it stays empty, make the bot an admin for a minute, or send `/setprivacy` to `@BotFather`, pick the bot and choose "Disable". Telegram applies a privacy change to a group only after the bot is removed and added again. Then send a new message and reload.
+`getUpdates` fails while a webhook is set on the bot. This project sets none, so a new bot is fine.
+Telegram keeps unread updates for 24 hours only.
+
+### Hb4. Push the migration and redeploy two functions
+
+Database first, then the functions. If you have not done A1 and A2 yet, they already cover this: the dry run in A1 then lists `20261015009800` as well, and A2 deploys every function.
+
+- [ ] Preview.
+
+```powershell
+bunx supabase db push --dry-run
+```
+
+It must list `20261015009800_telegram.sql` (and nothing you do not expect).
+
+- [ ] Apply it.
+
+```powershell
+bunx supabase db push
+```
+
+- [ ] Deploy the two functions (Docker Desktop running).
+
+```powershell
+bunx supabase functions deploy notify-dispatch --project-ref pkfptuwwgyvjxvumqika
+bunx supabase functions deploy scan-control --project-ref pkfptuwwgyvjxvumqika
+```
+
+`worker-tick` needs no redeploy for Telegram.
+Check: a second `bunx supabase db push` says the remote database is up to date.
+
+### Hb5. Set the two secrets
+
+- [ ] Create `supabase/functions/.env.telegram` (git-ignored) with two lines. Use your own values:
+
+```text
+TELEGRAM_BOT_TOKEN=<token from BotFather>
+TELEGRAM_CHAT_ID=<the id with the minus sign>
+```
+
+- [ ] Set them, then delete the file.
+
+```powershell
+bunx supabase secrets set --env-file supabase/functions/.env.telegram --project-ref pkfptuwwgyvjxvumqika
+Remove-Item supabase/functions/.env.telegram
+bunx supabase secrets list --project-ref pkfptuwwgyvjxvumqika
+```
+
+Check: the list shows `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. It never shows values.
+
+### Hb6. Send the test message
+
+- [ ] Run the call. It asks for the cron secret. Type it at the prompt. Never paste it anywhere else.
+
+```powershell
+$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
+$secret = [System.Net.NetworkCredential]::new("", $s).Password
+Invoke-RestMethod -Method Post -Uri "https://pkfptuwwgyvjxvumqika.supabase.co/functions/v1/scan-control" `
+  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_test"}'
+```
+
+Check: the answer says `ok: True`, `telegram_status: 200`, `description: sent`, and the group shows "Test message from the stock screener."
+The call always answers HTTP 200. Read `ok` and `description` for Telegram's own answer.
+
+### Hb7. What a real message looks like, and when it comes
+
+```text
+New on the screener · 21 Oct
+• MSFT Microsoft Corporation · #4 · at its −3 line
+• SAP SAP SE · #12 · at its −3 line
+
+Open the screener
+```
+
+- It comes after the daily scan, usually between 10:00 and 11:00 Sofia time. It is sent only when something is new, so some days bring nothing.
+- Each company is one line: ticker, name, rank and line. At most 20 lines, then `…and N more`. No prices.
+- A failed send retries after 1 minute, 5 minutes, 30 minutes and 2 hours. It is given up after 5 attempts or 24 hours.
+
+### Hb8. Turn off
+
+- [ ] Unset either secret. Nothing else changes and nothing fails.
+
+```powershell
+bunx supabase secrets unset TELEGRAM_BOT_TOKEN --project-ref pkfptuwwgyvjxvumqika
+```
+
+Messages created while it was off and younger than 24 hours are sent when you turn it on again. Older ones are dropped.
+
 ## I. Keep-alive job
 
 A free Supabase project pauses after a week without activity. The daily job prevents that (operator guide section 12). It runs daily at 06:17 UTC and only when `KEEPALIVE_ENABLED` is `true`.
@@ -556,6 +670,13 @@ The change takes effect at the next scan (operator guide 8.1).
 | Bell test says "The push service could not be reached." | The function could not connect to the phone's push service | Try again. If it repeats, check the Supabase function logs for `push_test_failed`. |
 | Bell test says "This phone is not registered any more." | The push service answered 404 or 410: the subscription is gone | Turn a switch on to register the phone again. |
 | Pushes stopped after a domain change | Subscriptions are tied to the address | Turn notifications on again (Part H). |
+| Telegram test says `not_configured: set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID` | A secret is missing or blank, or `scan-control` was not redeployed | Hb5, then deploy `scan-control` (Hb4). |
+| Telegram test says `Unauthorized` | The bot token is wrong or was revoked | Copy the token again from `@BotFather` (`/mybots`, the bot, API Token) and set it again (Hb5). |
+| Telegram test says `Bad Request: chat not found` | The chat id is wrong (missing minus sign) or the bot is not in the group | Redo Hb2 and Hb3, then set the id again. |
+| Telegram test says `Forbidden: bot was kicked from the group chat` | The bot was removed from the group | Add it again (Hb2). |
+| Telegram test says `Too Many Requests: retry after N` | Telegram asks for a pause | Wait N seconds, try again. |
+| Telegram test says `network_error` | The function could not reach Telegram | Try again later. |
+| `getUpdates` shows `"result":[]` | The bot sees no group messages (privacy mode), or the messages are older than 24 hours | Send a new message. Make the bot admin for a minute, or `/setprivacy` Disable and re-add the bot (Hb3). |
 | Keep-alive run is skipped | `KEEPALIVE_ENABLED` is not `true` | Part I. |
 | Keep-alive run is red | Wrong credentials, a stale scan, or `health` is not ok | Read the log. Operator guide 12. |
 | Supabase project is paused | No activity for a week | Dashboard, the project, Resume. Keep-alive prevents this. |
