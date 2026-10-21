@@ -1,43 +1,8 @@
 $ bun run test:db
 exit code: 0
-duration: 6.6 s
-finished: 2026-10-16T13:51:21.385Z
+duration: 6.5 s
+finished: 2026-10-17T08:52:43.890Z
 --- last 120 lines ---
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0100_schema.test.sql:3: NOTICE:  truncate cascades to table "digest_items"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0100_schema.test.sql:3: NOTICE:  truncate cascades to table "digest_deliveries"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0100_schema.test.sql:3: NOTICE:  truncate cascades to table "email_events"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "research_reports"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "digests"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "research_sources"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "research_work_texts"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "risk_monitor_state"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "risk_findings"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "digest_items"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "digest_deliveries"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0110_rls.test.sql:3: NOTICE:  truncate cascades to table "email_events"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0120_pipeline.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "research_reports"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "digests"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "research_sources"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "research_work_texts"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "risk_monitor_state"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "risk_findings"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "digest_items"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "digest_deliveries"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0130_public_reads.test.sql:3: NOTICE:  truncate cascades to table "email_events"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "security_identity_overrides"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "price_series"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "research_reports"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "risk_monitor_state"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "risk_findings"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "digests"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "broker_positions"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "eur_equivalents"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "eur_equivalent_overrides"
-psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "research_sources"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "research_work_texts"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "digest_items"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0140_data_functions.test.sql:3: NOTICE:  truncate cascades to table "digest_deliveries"
@@ -114,6 +79,41 @@ psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0950_res
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0950_research_cadence.test.sql:5: NOTICE:  truncate cascades to table "digest_items"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0950_research_cadence.test.sql:5: NOTICE:  truncate cascades to table "digest_deliveries"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0950_research_cadence.test.sql:5: NOTICE:  truncate cascades to table "email_events"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:4: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "research_reports"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "digests"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "research_sources"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "research_work_texts"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "risk_monitor_state"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "risk_findings"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "digest_items"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "digest_deliveries"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0960_evidence_trimmed.test.sql:5: NOTICE:  truncate cascades to table "email_events"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:4: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "security_identity_overrides"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "price_series"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "research_reports"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "risk_monitor_state"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "risk_findings"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "digests"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "broker_positions"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "eur_equivalents"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "eur_equivalent_overrides"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "research_sources"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "research_work_texts"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "digest_items"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "digest_deliveries"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0970_primary_listing.test.sql:5: NOTICE:  truncate cascades to table "email_events"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:4: NOTICE:  extension "pgtap" already exists, skipping
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "research_reports"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "digests"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "research_sources"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "research_work_texts"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "risk_monitor_state"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "risk_findings"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "digest_items"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "digest_deliveries"
+psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/0980_every_rank_minus3.test.sql:5: NOTICE:  truncate cascades to table "email_events"
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/quotes_rate_limit.test.sql:2: NOTICE:  extension "pgtap" already exists, skipping
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/research_constraints.sql:2: NOTICE:  extension "pgtap" already exists, skipping
 psql:/Data/git_repos/_tests/nira/personal-stock-screener/supabase/tests/research_constraints.sql:3: WARNING:  there is already a transaction in progress

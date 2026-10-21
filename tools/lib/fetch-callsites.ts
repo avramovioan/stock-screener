@@ -92,6 +92,12 @@ export const FETCH_POLICY: Record<string, FetchPolicy> = {
     reason:
       "sec.gov and data.sec.gov paths built from CIK numbers and accession numbers from SEC responses",
   },
+  "supabase/functions/_shared/adapters/telegram.ts": {
+    category: "fixed-host",
+    reason:
+      "api.telegram.org (API_HOST is a constant); the bot token is part of the path, so nothing here logs a URL or a network error text",
+    requires: ["https://api.telegram.org"],
+  },
   "supabase/functions/_shared/adapters/flex.ts": {
     category: "fixed-host",
     reason:

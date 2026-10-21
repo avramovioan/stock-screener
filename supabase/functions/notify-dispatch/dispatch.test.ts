@@ -1,15 +1,19 @@
 import type { PushResult, PushTarget, SendPushOptions } from "@adapters/push.ts";
+import type { TelegramResult } from "@adapters/telegram.ts";
 import type { DiscountEntry } from "@core/digest.ts";
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import {
   type ClaimedDelivery,
+  type ClaimedTelegram,
   type Completion,
   type DispatchDeps,
   type DispatchStore,
   MAX_ATTEMPTS,
   processDelivery,
+  processTelegram,
   RETRY_SECONDS,
   runDispatch,
+  type TelegramCompletion,
 } from "./dispatch.ts";
 
 const NOW = Date.parse("2026-10-15T10:30:00Z");
@@ -71,6 +75,15 @@ class FakeStore implements DispatchStore {
   completions: { id: string; c: Completion }[] = [];
   subs: Sub[] = [];
   queue: ClaimedDelivery[] = [];
+  telegramQueue: ClaimedTelegram[] = [];
+  telegramCompletions: { id: string; c: TelegramCompletion }[] = [];
+  claimTelegram(limit: number) {
+    return Promise.resolve(this.telegramQueue.splice(0, limit));
+  }
+  completeTelegram(id: string, c: TelegramCompletion) {
+    this.telegramCompletions.push({ id, c });
+    return Promise.resolve();
+  }
   claim(limit: number) {
     return Promise.resolve(this.queue.splice(0, limit));
   }
@@ -117,11 +130,27 @@ function sub(id: string, over: Partial<Sub> = {}): Sub {
   };
 }
 
-function setup(over: { push?: (t: PushTarget, o: SendPushOptions) => PushResult } = {}) {
+function setup(
+  over: {
+    push?: (t: PushTarget, o: SendPushOptions) => PushResult;
+    telegram?: (text: string) => TelegramResult;
+  } = {},
+) {
   const store = new FakeStore();
   const pushCalls: { endpoint: string; payload: string; opts: SendPushOptions }[] = [];
+  const telegramCalls: string[] = [];
+  const telegram = over.telegram;
   const deps: DispatchDeps = {
     store,
+    telegram:
+      telegram === undefined
+        ? null
+        : {
+            send: (text) => {
+              telegramCalls.push(text);
+              return Promise.resolve(telegram(text));
+            },
+          },
     sendPush: (t, payload, opts) => {
       pushCalls.push({ endpoint: t.endpoint, payload, opts });
       return Promise.resolve(over.push?.(t, opts) ?? { ok: true });
@@ -130,7 +159,7 @@ function setup(over: { push?: (t: PushTarget, o: SendPushOptions) => PushResult 
     siteUrl: "https://screener.example.test",
     log: () => {},
   };
-  return { store, deps, pushCalls };
+  return { store, deps, pushCalls, telegramCalls };
 }
 
 Deno.test("a retried delivery stays one delivery: same row, same Topic on every attempt", async () => {
@@ -322,4 +351,116 @@ Deno.test("a device delivery that the push service says is gone revokes the devi
   const c = await processDelivery(delivery({ userId: null, subscriptionId: "d1" }), deps);
   assertEquals([c.status, c.skipReason], ["skipped", "no_subscription"]);
   assertEquals(store.subs[0]?.revoked, true);
+});
+
+// Telegram group: the public digest, one message ----------------------------------------------------------------------------------
+
+function tgDelivery(over: Partial<ClaimedTelegram> = {}): ClaimedTelegram {
+  return {
+    id: "tg-1",
+    digestId: "dig-pub",
+    attempts: 1,
+    content: { kind: "discounts", scanDate: "2026-10-21", items: [ENTRY] },
+    digestCreatedAt: "2026-10-15T10:20:00Z",
+    scanDate: "2026-10-21",
+    ...over,
+  };
+}
+
+Deno.test("telegram: a delivery is sent as one HTML message with the scan day and the site link", async () => {
+  const { deps, telegramCalls } = setup({ telegram: () => ({ ok: true, messageId: 9 }) });
+  const c = await processTelegram(tgDelivery(), deps);
+  assertEquals([c.status, c.messageId], ["sent", 9]);
+  assertEquals(telegramCalls.length, 1);
+  assertStringIncludes(telegramCalls[0] ?? "", "<b>New on the screener · 21 Oct</b>");
+  assertStringIncludes(telegramCalls[0] ?? "", "• <b>AAA</b> Alpha Corp · #12 · at its −3 line");
+  assertStringIncludes(
+    telegramCalls[0] ?? "",
+    '<a href="https://screener.example.test">Open the screener</a>',
+  );
+});
+
+Deno.test("telegram: a digest with no companies sends nothing", async () => {
+  const { deps, telegramCalls } = setup({ telegram: () => ({ ok: true, messageId: 1 }) });
+  const c = await processTelegram(
+    tgDelivery({ content: { kind: "discounts", scanDate: "2026-10-21", items: [] } }),
+    deps,
+  );
+  assertEquals([c.status, c.error], ["skipped", "empty"]);
+  assertEquals(telegramCalls.length, 0);
+});
+
+Deno.test("telegram: network errors and 5xx retry with the push backoff, then fail after five attempts", async () => {
+  for (const result of [
+    { ok: false, kind: "network" },
+    { ok: false, kind: "server", status: 502 },
+  ] as TelegramResult[]) {
+    const { deps } = setup({ telegram: () => result });
+    const first = await processTelegram(tgDelivery({ attempts: 1 }), deps);
+    assertEquals([first.status, first.retryInSeconds], ["pending", RETRY_SECONDS[0]]);
+    const last = await processTelegram(tgDelivery({ attempts: MAX_ATTEMPTS }), deps);
+    assertEquals(last.status, "failed");
+    assert(last.error?.startsWith("attempts_exhausted:"));
+  }
+});
+
+Deno.test("telegram: a 429 waits at least Telegram's retry_after", async () => {
+  const { deps } = setup({
+    telegram: () => ({ ok: false, kind: "rate_limited", status: 429, retryAfterSec: 5000 }),
+  });
+  const c = await processTelegram(tgDelivery(), deps);
+  assertEquals([c.status, c.retryInSeconds, c.error], ["pending", 5000, "telegram_429"]);
+});
+
+Deno.test("telegram: a 4xx is final, with its status as the error code", async () => {
+  const { deps } = setup({
+    telegram: () => ({
+      ok: false,
+      kind: "rejected",
+      status: 403,
+      description: "Forbidden: bot was kicked",
+    }),
+  });
+  const c = await processTelegram(tgDelivery(), deps);
+  assertEquals([c.status, c.error], ["failed", "telegram_403"]);
+});
+
+Deno.test("telegram: a digest older than 24 hours expires unsent", async () => {
+  const { deps, telegramCalls } = setup({ telegram: () => ({ ok: true, messageId: 1 }) });
+  const c = await processTelegram(tgDelivery({ digestCreatedAt: "2026-10-14T10:00:00Z" }), deps);
+  assertEquals([c.status, c.error], ["failed", "expired"]);
+  assertEquals(telegramCalls.length, 0);
+});
+
+Deno.test("telegram: runDispatch claims and records telegram deliveries in the same run as push", async () => {
+  const { store, deps, telegramCalls } = setup({ telegram: () => ({ ok: true, messageId: 5 }) });
+  store.telegramQueue = [tgDelivery()];
+  const r = await runDispatch(deps, { limit: 10, budgetMs: 1000 });
+  assertEquals(r, { claimed: 1, processed: 1, errors: 0 });
+  assertEquals(telegramCalls.length, 1);
+  assertEquals(
+    store.telegramCompletions.map((x) => [x.id, x.c.status, x.c.messageId]),
+    [["tg-1", "sent", 5]],
+  );
+});
+
+Deno.test("telegram: when it is not configured nothing is claimed and nothing fails", async () => {
+  const { store, deps } = setup();
+  store.telegramQueue = [tgDelivery()];
+  const r = await runDispatch(deps, { limit: 10, budgetMs: 1000 });
+  assertEquals(r, { claimed: 0, processed: 0, errors: 0 });
+  assertEquals(store.telegramQueue.length, 1);
+});
+
+Deno.test("telegram: an error in one delivery is counted and does not stop the run", async () => {
+  const { store, deps } = setup({ telegram: () => ({ ok: true, messageId: 1 }) });
+  store.telegramQueue = [tgDelivery({ id: "a" }), tgDelivery({ id: "b" })];
+  let n = 0;
+  store.completeTelegram = (id, c) => {
+    if (n++ === 0) return Promise.reject(new Error("db down"));
+    store.telegramCompletions.push({ id, c });
+    return Promise.resolve();
+  };
+  const r = await runDispatch(deps, { limit: 10, budgetMs: 1000 });
+  assertEquals(r, { claimed: 2, processed: 1, errors: 1 });
 });

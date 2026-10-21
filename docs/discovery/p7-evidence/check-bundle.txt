@@ -1,7 +1,7 @@
 $ bun run check:bundle
 exit code: 0
-duration: 1.2 s
-finished: 2026-10-16T13:50:21.679Z
+duration: 1.1 s
+finished: 2026-10-17T08:59:52.661Z
 --- last 120 lines ---
 bundle secret scan: OK (11 files)
 $ bun run tools/check-bundle-secrets.ts

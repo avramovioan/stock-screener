@@ -7,7 +7,13 @@ import {
   assertThrows,
 } from "@std/assert";
 import { base64UrlEncode } from "./encoding.ts";
-import { isAllowedPushEndpoint, loadPushEnv, type PushEnv, sendPush } from "./push.ts";
+import {
+  checkPushConfig,
+  isAllowedPushEndpoint,
+  loadPushEnv,
+  type PushEnv,
+  sendPush,
+} from "./push.ts";
 
 async function makeEnv(): Promise<PushEnv> {
   const keys = await webpush.generateVapidKeys({ extractable: true });
@@ -213,4 +219,50 @@ Deno.test("isAllowedPushEndpoint: https push services only", () => {
   for (const url of yes) assert(isAllowedPushEndpoint(url), url);
   for (const url of no) assertEquals(isAllowedPushEndpoint(url), false, url);
   assert(isAllowedPushEndpoint("https://push.example.test/x", ["push.example.test"]));
+});
+
+Deno.test("checkPushConfig names a short problem code, never a value", async () => {
+  const env = await makeEnv();
+  const get = (e: Record<string, string>) => (n: string) => e[n];
+  const good = {
+    VAPID_PUBLIC_KEY: env.publicKey,
+    VAPID_PRIVATE_KEY: env.privateKeyJwk,
+    VAPID_SUBJECT: env.subject,
+  };
+  assertEquals(await checkPushConfig(get(good)), { configured: true, problem: null });
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PRIVATE_KEY: "" }))).problem,
+    "private_missing",
+  );
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PUBLIC_KEY: "" }))).problem,
+    "public_missing",
+  );
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_SUBJECT: "" }))).problem,
+    "subject_missing",
+  );
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_SUBJECT: "ops@x" }))).problem,
+    "subject_invalid",
+  );
+  // PowerShell strips the JWK's quotes
+  const stripped = env.privateKeyJwk.replaceAll('"', "");
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PRIVATE_KEY: stripped }))).problem,
+    "private_not_json",
+  );
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PRIVATE_KEY: "{}" }))).problem,
+    "private_not_jwk",
+  );
+  const other = await makeEnv();
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PUBLIC_KEY: other.publicKey }))).problem,
+    "key_mismatch",
+  );
+  assertEquals(
+    (await checkPushConfig(get({ ...good, VAPID_PUBLIC_KEY: other.publicKey }))).configured,
+    false,
+  );
 });

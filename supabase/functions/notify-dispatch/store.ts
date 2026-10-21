@@ -1,5 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ClaimedDelivery, Completion, DispatchStore } from "./dispatch.ts";
+import type {
+  ClaimedDelivery,
+  ClaimedTelegram,
+  Completion,
+  DispatchStore,
+  TelegramCompletion,
+} from "./dispatch.ts";
 
 export function createDispatchStore(client: SupabaseClient): DispatchStore {
   async function rpc(name: string, args: Record<string, unknown> = {}): Promise<unknown> {
@@ -41,6 +47,18 @@ export function createDispatchStore(client: SupabaseClient): DispatchStore {
     },
     async markSubscription(id, outcome) {
       await rpc("notify_mark_subscription", { p_id: id, p_outcome: outcome });
+    },
+    async claimTelegram(limit) {
+      return ((await rpc("notify_telegram_claim", { p_limit: limit })) ?? []) as ClaimedTelegram[];
+    },
+    async completeTelegram(id, c: TelegramCompletion) {
+      await rpc("notify_telegram_complete", {
+        p_id: id,
+        p_status: c.status,
+        p_error: c.error ?? null,
+        p_message_id: c.messageId ?? null,
+        p_retry_in_seconds: c.retryInSeconds ?? null,
+      });
     },
     async complete(id, c: Completion) {
       await rpc("notify_complete_delivery", {

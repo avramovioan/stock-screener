@@ -216,6 +216,8 @@ and `20261015009700_device_push.sql` (device notifications without an account). 
 changes `push-subscribe`, `notify-dispatch` and `worker-tick`. Run `db push` and `functions deploy` back to back, in that order. The new
 functions expect the new tables, and the old functions do not understand the new rows.
 
+The optional Telegram group adds the migration `20261015009800_telegram.sql` and needs `notify-dispatch` and `scan-control` redeployed (4.8). `worker-tick` needs no redeploy for it.
+
 ### 2.2a Expose the `app` schema to the hosted REST API (required, right after `db push`)
 
 The functions call the service-only helpers in schema `app` through PostgREST (`sb.schema("app")`). The `schemas` list under `[api]` in
@@ -314,6 +316,8 @@ bundle scan rejects it in the browser build).
 | `FLEX_ENC_KEY_V1`, `FLEX_ENC_KEY_CURRENT` | AES key (base64, 32 bytes) for stored Flex tokens and the version number (a plain integer) used for new tokens (section 5). |
 | `FLEX_USER_AGENT` | Mandatory User-Agent for IBKR Flex requests, for example `PersonalStockScreener/1.0`. |
 | `JWT_ISSUER` | Local only: the issuer of local user tokens (section 0.3). |
+| `TELEGRAM_BOT_TOKEN` | Optional. The bot token from @BotFather; with `TELEGRAM_CHAT_ID` it switches on the Telegram group message of each new public digest (sent by `notify-dispatch`). Either one unset = off. Never logged. |
+| `TELEGRAM_CHAT_ID` | Optional. The id of the group the bot posts to (a negative number such as `-1001234567890`). |
 
 ### 2.5 Vault secrets and the cron jobs
 
@@ -508,6 +512,143 @@ bunx supabase db push
 
 `db push` applies the migration `20261015009500_remove_email.sql`. It turns every stored e-mail preference off and skips pending e-mail deliveries. Deploy `notify-dispatch` and `worker-tick` together with it. Also delete the Resend webhook endpoint in the Resend dashboard (Webhooks). The old e-mail tables and columns stay in the database unused.
 
+### 4.8 Telegram group (optional)
+
+The site can also post to one Telegram group. It follows the same rules as the device digest. One message goes out per scan run, only when
+the public "new companies on the list" digest is not empty. Holdings digests never go to Telegram. When nothing is new, the group hears nothing.
+
+Telegram is off until both function secrets are set (`TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`, section 2.4). If either is missing, nothing
+is sent and nothing fails. The token is never logged.
+
+**1. Create the bot.**
+
+1. In Telegram, open a chat with `@BotFather` (the official bot, with a blue check).
+2. Send `/newbot`.
+3. Send a display name when it asks, for example `Stock Screener`.
+4. Send a username when it asks. It must be unique and end in `bot`, for example `my_stock_screener_bot`.
+5. BotFather answers with the token. It looks like `<digits>:<letters and digits>`. Copy it. Treat it like a password.
+
+**2. Add the bot to the group.**
+
+1. Open the group, tap the group name, then "Add members".
+2. Search for the bot's username and add it.
+3. The bot only needs to be a member that is allowed to post. It does not need to be an admin.
+
+**3. Find the chat id.**
+
+1. Send any message in the group, for example `hello`.
+2. Open this address in a browser. Put your own token in place of `<token>`:
+   `https://api.telegram.org/bot<token>/getUpdates`
+3. Find `"chat":{"id":-100...`. The number with the minus sign is the chat id. A supergroup id starts with `-100`. Keep the minus sign.
+4. If the answer is `"result":[]`, send another message in the group and reload the page.
+5. If it stays empty, the bot may not see ordinary group messages because of privacy mode. Do one of these, then send a new message and reload.
+   - Make the bot an admin of the group for a minute. An admin bot sees all messages.
+   - Or turn privacy mode off: send `/setprivacy` to `@BotFather`, pick the bot, choose "Disable". Telegram applies this to a group only after the bot is removed and added again.
+6. `getUpdates` does not work while a webhook is set on the bot (Telegram answers with an error that mentions the webhook). This project never sets one, so a new bot is fine.
+7. Telegram keeps unread updates for 24 hours. If the list is empty, the message may be too old. Send a new one.
+
+Do not paste the address with the token into chats or tickets. Anyone with the token can control the bot.
+
+**4. Push the migration and redeploy the two functions.** Database first, then the functions.
+
+```powershell
+bunx supabase db push --dry-run
+bunx supabase db push
+bunx supabase functions deploy notify-dispatch --project-ref <ref>
+bunx supabase functions deploy scan-control --project-ref <ref>
+```
+
+The dry run must list `20261015009800_telegram.sql` (plus anything else still pending, read the list). `notify-dispatch` sends the message.
+`scan-control` has the test action. `worker-tick` needs no redeploy: the digest stage calls the database function that was replaced by the
+migration, and that function creates the delivery row.
+
+**5. Set the two secrets.** Put them in a git-ignored file so they stay out of your shell history. Create `supabase/functions/.env.telegram`
+with two lines (use your own values):
+
+```text
+TELEGRAM_BOT_TOKEN=<token from BotFather>
+TELEGRAM_CHAT_ID=<the id with the minus sign>
+```
+
+```powershell
+bunx supabase secrets set --env-file supabase/functions/.env.telegram --project-ref <ref>
+Remove-Item supabase/functions/.env.telegram
+bunx supabase secrets list --project-ref <ref>
+```
+
+The list must show both names. It never shows values.
+
+**6. Run the test call.** It sends one fixed message to the group, at once, without waiting for a scan.
+
+Run `scripts/telegram-test.ps1` (calls `scan-control` with `telegram_test`; it asks for the cron secret with hidden input, or reads `$env:SCREENER_CRON_SECRET`). For people without the scripts, the same call by hand:
+
+```powershell
+$s = Read-Host "CRON_SHARED_SECRET" -AsSecureString
+$secret = [System.Net.NetworkCredential]::new("", $s).Password
+Invoke-RestMethod -Method Post -Uri "https://<ref>.supabase.co/functions/v1/scan-control" `
+  -Headers @{ "x-cron-secret" = $secret } -ContentType "application/json" -Body '{"action":"telegram_test"}'
+```
+
+Good answer: `ok: True`, `telegram_status: 200`, `description: sent`. The group shows "Test message from the stock screener."
+The call always answers HTTP 200. Read `ok` and `description` to see what Telegram said. A failed call writes no audit row.
+
+**Send the latest digest now.** Use this when the group got nothing (for example a send failed or the bot was set up after the scan).
+It takes the latest public digest that is ready and younger than 24 hours. It adds the Telegram message if there is none, tries again
+a failed or skipped one, and does nothing for one that was already sent. The group gets the message within a minute.
+
+Run `scripts/telegram-send-latest.ps1` (calls `scan-control` with `telegram_send_latest`; see `scripts/README.md`).
+
+Answers (always HTTP 200 for these):
+- `ok: True`, `queued: True`, `digest_id`, `scan_date`, `note: sends within a minute`: it is queued.
+- `queued: False`, `reason: already_sent`: the group already has it.
+- `queued: False`, `reason: no_ready_digest`: no ready digest in the last 24 hours (nothing new, or the scan is not done).
+- `queued: False`, `reason: not_configured`: set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` first.
+
+This needs the fix `bunx supabase db push` (migration 20261015009900) and a redeploy of `scan-control`. The same fix makes the minute check
+pick up Telegram messages and their retries on their own.
+
+**7. What a real message looks like.** The headline has the date of the scan in Sofia time. Each company is one line: ticker, name, rank
+and the line it sits at. At most 20 lines are shown, then `…and N more`. A link to the site closes the message.
+
+```text
+New on the screener · 21 Oct
+• MSFT Microsoft Corporation · #4 · at its −3 line
+• SAP SAP SE · #12 · at its −3 line
+
+Open the screener
+```
+
+The tickers and the link are bold or clickable in Telegram. Real messages carry no prices.
+
+**When it arrives.** After the daily scan, usually between 10:00 and 11:00 Sofia time, and only when something is new. Failed sends retry
+after 1 minute, 5 minutes, 30 minutes and 2 hours. After 5 attempts, or 24 hours after the digest, the delivery is given up.
+
+**Check a delivery.** Table `telegram_deliveries` (one row per public digest): `status` (`pending`, `sent`, `failed`, `skipped`), `attempts`,
+`last_error`, `sent_at`, `message_id`.
+
+**Troubleshooting.** Read `description` from the test call. It is Telegram's own text, never the token.
+
+| Description | Cause and action |
+|---|---|
+| `not_configured: set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID` | A secret is missing or blank, or `scan-control` was not redeployed. Set both secrets (step 5), deploy `scan-control` (step 4). |
+| `Unauthorized` | The token is wrong or was revoked. Copy it again from BotFather (`/mybots`, pick the bot, API Token) and set it again. |
+| `Bad Request: chat not found` | The chat id is wrong (missing minus sign, a user id instead of the group) or the bot is not in the group. Redo step 3. |
+| `Forbidden: bot was kicked from the group chat` or `bot is not a member of the group chat` | The bot was removed. Add it again (step 2). |
+| `Too Many Requests: retry after N` | Telegram asks for a pause of N seconds. Wait and try again. Real deliveries wait this long by themselves. |
+| `network_error` | The function could not reach Telegram. Try again later. |
+
+If the group was upgraded to a supergroup, its chat id changed. Telegram may answer `Bad Request: group chat was upgraded to a supergroup chat`.
+Run step 3 again and set the new id.
+
+**Turn it off.** Unset either secret. Nothing else changes, and nothing fails.
+
+```powershell
+bunx supabase secrets unset TELEGRAM_BOT_TOKEN --project-ref <ref>
+```
+
+Digests created while it was off wait as pending rows. After you turn it on again, those younger than 24 hours are sent, and older ones are
+marked `failed` with `expired`.
+
 ## 5. Set up and verify IBKR Flex (filled in P5b)
 
 Scope: read-only reporting through the IBKR Flex Web Service. The app never places orders, never asks for an IBKR username or password and never stores a token in the browser.
@@ -546,6 +687,8 @@ Run these once with the owner's account and record the results in this section: 
 ## 6. Deploy the web app (filled)
 
 The step-by-step path from the current hosted project to an always-on Cloudflare site is in [cloudflare-go-live.md](cloudflare-go-live.md).
+
+Note: `bun run build` reads the Supabase URL from the environment or from `apps/web/.env*` (`.env`, `.env.local`, `.env.production`, `.env.production.local`), the same way Vite does. In a Cloudflare build set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL` and `VITE_VAPID_PUBLIC_KEY` as build variables. Never hard-code the host in `apps/web/public/_headers`; it keeps the `__SUPABASE_ORIGIN__` placeholders and the build fills them in.
 
 One-time Cloudflare setup:
 
@@ -606,10 +749,18 @@ the first one on a weekday afternoon when you can watch it (section 8).
 | `set_setting` | `key` one of `indicator`, `universe`, `pipeline`, `providers`; `value`; `reason` (3 characters or more); `confirm` `true` | audited settings change |
 | `override` | `kind`, `yahoo_symbol`, `reason`, ... | identity override (`force_canonical`, `exclude`, `force_us`, `force_not_us`, `merge_into_company`, `predecessor_continuity`) |
 | `research_now` | `security_id`, optional `force` | queues a manual research report (section 9.4) |
+| `telegram_test` | none | sends one test message to the Telegram group (4.8) |
+| `telegram_send_latest` | none | queues the latest ready digest for the Telegram group (4.8) |
+| `push_test` | none | sends one test push to every active device, at most once per 5 minutes; answers counts only |
+| `push_send_latest` | none | queues the latest ready digest for devices that have none yet and retries failed ones; kicks the dispatcher |
+
+Ready-made PowerShell scripts for these calls and for the other checks (health, account check, site headers, keep-alive) are in `scripts/`; see `scripts/README.md`. For example `scripts/push-test.ps1` runs `push_test`.
 
 The research caps and the EUR catalogue switch are not `set_setting` keys: change them with SQL on `app_settings` (9.3, section 14).
 
 ## 8. Inspect coverage and failures (filled)
+
+Scripts: `scripts/scan-status.ps1` and `scripts/list-failures.ps1` run the two calls below (see `scripts/README.md`).
 
 ```powershell
 $h = @{ "x-cron-secret" = $env:CRON_SHARED_SECRET }

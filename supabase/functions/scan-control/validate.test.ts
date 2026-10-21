@@ -277,3 +277,22 @@ Deno.test("set_setting pipeline rejects unbounded timing values and an out-of-ra
     true,
   );
 });
+
+Deno.test("telegram_test: needs no arguments", () => {
+  assertEquals(parseRequest({ action: "telegram_test" }), { ok: true, action: "telegram_test" });
+});
+
+Deno.test("telegram_send_latest: needs no arguments", () => {
+  assertEquals(parseRequest({ action: "telegram_send_latest" }), {
+    ok: true,
+    action: "telegram_send_latest",
+  });
+});
+
+Deno.test("push_test and push_send_latest: need no arguments", () => {
+  assertEquals(parseRequest({ action: "push_test" }), { ok: true, action: "push_test" });
+  assertEquals(parseRequest({ action: "push_send_latest" }), {
+    ok: true,
+    action: "push_send_latest",
+  });
+});

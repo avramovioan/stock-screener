@@ -77,6 +77,8 @@ insert into matrix (tbl, anon, auth, owner_col, hidden_where, admin_reads, seed_
   ('digests',                     'NNNN', 'YNNN', 'user_id', null, false, '{"cutoff_reason":"complete","status":"ready"}'),
   ('digest_items',                'NNNN', 'YNNN', 'user_id', null, false, '{"ref_type":"episode"}'),
   ('digest_deliveries',           'NNNN', 'CNNN', 'user_id', null, false, '{}'),
+  ('telegram_deliveries',         'NNNN', 'NNNN', null, null, false, '{}'), -- migration 20261015009800: the Telegram message of a public digest, service role only
+  ('push_operator_runs',          'NNNN', 'NNNN', null, null, false, '{}'), -- migration 20261015010000: last run of rate-limited operator push actions, service role only
   ('broker_connections',          'NNNN', 'CNNN', 'user_id', null, false, '{}'),
   ('broker_sync_runs',            'NNNN', 'CNNN', 'user_id', null, false, '{"kind":"daily"}'),
   ('broker_positions',            'NNNN', 'YNNN', 'user_id', null, false, '{"match_status":"matched_isin"}'),

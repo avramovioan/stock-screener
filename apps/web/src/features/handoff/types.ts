@@ -23,6 +23,11 @@ export interface TradeTarget {
   rank: number | null;
   exchangeName: string | null;
   currency: string | null;
+  /** Yahoo exchange code of the screening listing (`NMS`, `PAR`): with `listingCountry` it gives the home ticker (RMS.PA -> RMS). */
+  exchangeCode?: string | null | undefined;
+  listingCountry?: string | null | undefined;
+  /** The card's last close in `currency`: prefills the limit price when the prompt routes to the home market. */
+  closePrice?: number | null | undefined;
   position?: HeldPosition | undefined;
 }
 

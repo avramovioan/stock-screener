@@ -37,21 +37,34 @@ export interface PushDeps {
   nowMs?: () => number;
 }
 
+/** A VAPID configuration problem; `code` is a short, value-free identifier (shown by health). */
+export class PushConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "PushConfigError";
+    this.code = code;
+  }
+}
+
 /** Reads the three VAPID secrets. Error messages name variables, never values. */
 export function loadPushEnv(
   get: (name: string) => string | undefined = (n) => Deno.env.get(n),
 ): PushEnv {
-  const need = (name: string): string => {
+  const need = (name: string, code: string): string => {
     const value = get(name);
     if (value === undefined || value.trim() === "")
-      throw new Error(`Missing required environment variable: ${name}`);
+      throw new PushConfigError(code, `Missing required environment variable: ${name}`);
     return value.trim();
   };
-  const publicKey = need("VAPID_PUBLIC_KEY");
-  const privateKeyJwk = need("VAPID_PRIVATE_KEY");
-  const subject = need("VAPID_SUBJECT");
+  const publicKey = need("VAPID_PUBLIC_KEY", "public_missing");
+  const privateKeyJwk = need("VAPID_PRIVATE_KEY", "private_missing");
+  const subject = need("VAPID_SUBJECT", "subject_missing");
   if (!/^(mailto:|https:\/\/)/.test(subject))
-    throw new Error("VAPID_SUBJECT must start with mailto: or https://");
+    throw new PushConfigError(
+      "subject_invalid",
+      "VAPID_SUBJECT must start with mailto: or https://",
+    );
   return { publicKey, privateKeyJwk, subject };
 }
 
@@ -62,11 +75,17 @@ async function createServer(env: PushEnv): Promise<webpush.ApplicationServer> {
   try {
     parsed = JSON.parse(env.privateKeyJwk) as Record<string, unknown>;
   } catch {
-    throw new Error("VAPID_PRIVATE_KEY must be JSON (an EC P-256 private JWK)");
+    throw new PushConfigError(
+      "private_not_json",
+      "VAPID_PRIVATE_KEY must be JSON (an EC P-256 private JWK)",
+    );
   }
   const priv = (parsed.privateKey ?? parsed) as JsonWebKey;
   if (priv.kty !== "EC" || priv.crv !== "P-256" || !priv.d || !priv.x || !priv.y) {
-    throw new Error("VAPID_PRIVATE_KEY must be an EC P-256 private JWK");
+    throw new PushConfigError(
+      "private_not_jwk",
+      "VAPID_PRIVATE_KEY must be an EC P-256 private JWK",
+    );
   }
   const pub: JsonWebKey = {
     kty: "EC",
@@ -76,14 +95,34 @@ async function createServer(env: PushEnv): Promise<webpush.ApplicationServer> {
     ext: true,
     key_ops: ["verify"],
   };
-  const vapidKeys = await webpush.importVapidKeys(
-    { publicKey: pub, privateKey: priv },
-    { extractable: false },
-  );
+  let vapidKeys: Awaited<ReturnType<typeof webpush.importVapidKeys>>;
+  try {
+    vapidKeys = await webpush.importVapidKeys(
+      { publicKey: pub, privateKey: priv },
+      { extractable: false },
+    );
+  } catch {
+    throw new PushConfigError("private_invalid", "VAPID_PRIVATE_KEY could not be imported");
+  }
   if ((await webpush.exportApplicationServerKey(vapidKeys)) !== env.publicKey) {
-    throw new Error("VAPID_PUBLIC_KEY does not match VAPID_PRIVATE_KEY");
+    throw new PushConfigError("key_mismatch", "VAPID_PUBLIC_KEY does not match VAPID_PRIVATE_KEY");
   }
   return await webpush.ApplicationServer.new({ contactInformation: env.subject, vapidKeys });
+}
+
+/** Runs the VAPID validation once without any network call; never exposes a key value. */
+export async function checkPushConfig(
+  get: (name: string) => string | undefined = (n) => Deno.env.get(n),
+): Promise<{ configured: boolean; problem: string | null }> {
+  try {
+    await createServer(loadPushEnv(get));
+    return { configured: true, problem: null };
+  } catch (error) {
+    return {
+      configured: false,
+      problem: error instanceof PushConfigError ? error.code : "unknown",
+    };
+  }
 }
 
 function serverFor(env: PushEnv): Promise<webpush.ApplicationServer> {

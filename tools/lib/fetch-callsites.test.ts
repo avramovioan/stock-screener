@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type FetchPolicy, fetchPolicyProblems, findFetchCalls } from "./fetch-callsites.ts";
+import {
+  FETCH_POLICY,
+  type FetchPolicy,
+  fetchPolicyProblems,
+  findFetchCalls,
+} from "./fetch-callsites.ts";
 
 describe("findFetchCalls", () => {
   it("finds fetch and fetchImpl calls and ignores comments and type uses", () => {
@@ -51,5 +56,13 @@ describe("fetchPolicyProblems", () => {
     expect(fetchPolicyProblems([{ file: "f/none.ts", text: "const a = 1;" }], {}).problems).toEqual(
       [],
     );
+  });
+});
+
+describe("FETCH_POLICY", () => {
+  it("allows the Telegram adapter as a fixed host and keeps it pinned to api.telegram.org", () => {
+    const entry = FETCH_POLICY["supabase/functions/_shared/adapters/telegram.ts"];
+    expect(entry?.category).toBe("fixed-host");
+    expect(entry?.requires).toEqual(["https://api.telegram.org"]);
   });
 });

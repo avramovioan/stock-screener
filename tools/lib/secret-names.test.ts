@@ -14,6 +14,8 @@ describe("SERVER_SECRET_NAMES", () => {
       "VAPID_PRIVATE_KEY",
       "CRON_SHARED_SECRET",
       "GEMINI_API_KEY",
+      "TELEGRAM_BOT_TOKEN",
+      "TELEGRAM_CHAT_ID",
     ]) {
       expect(scanText(name).length, name).toBeGreaterThan(0);
     }

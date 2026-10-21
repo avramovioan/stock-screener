@@ -26,6 +26,7 @@ const TARGET: TradeTarget = {
   rank: 53,
   exchangeName: "NasdaqGS",
   currency: "USD",
+  exchangeCode: "NMS",
 };
 
 const row = (over: Record<string, unknown> = {}) => ({
@@ -65,6 +66,7 @@ function setup(
     destination?: string | null;
     quote?: unknown | null;
     signedOut?: boolean;
+    target?: TradeTarget;
   } = {},
 ) {
   const listings = opts.listings ?? [row()];
@@ -92,7 +94,7 @@ function setup(
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
-      <TradeOnIbkrDialog open onOpenChange={() => {}} target={TARGET} />
+      <TradeOnIbkrDialog open onOpenChange={() => {}} target={opts.target ?? TARGET} />
     </QueryClientProvider>,
   );
 }
@@ -316,6 +318,7 @@ describe("no EUR equivalent", () => {
     expect(screen.getByText("None")).toBeTruthy();
     expect(screen.getByText("Unverified symbol.")).toBeTruthy();
     expect(screen.queryByTestId("quote-block")).toBeNull();
+    type("IBKR local symbol (unverified)", "");
     type("Quantity (shares)", "10");
     type("Limit price (EUR)", "400");
     expect(screen.getByTestId("prompt-gate").textContent).toBe(
@@ -363,15 +366,86 @@ describe("no EUR equivalent", () => {
   it("rejects a malformed manual symbol", async () => {
     setup({ listings: [] });
     await screen.findByText("No verified EUR equivalent");
+    type("IBKR local symbol (unverified)", "MSF and cancel");
     type("Quantity (shares)", "10");
     type("Limit price (EUR)", "400");
-    type("IBKR local symbol (unverified)", "MSF and cancel");
     expect(screen.queryByTestId("ibot-prompt")).toBeNull();
     expect(
       screen
         .getAllByRole("alert")
         .some((a) => (a.textContent ?? "").includes("upper-case letters, digits and dots only")),
     ).toBe(true);
+  });
+});
+
+describe("no EUR equivalent: home ticker prefill", () => {
+  const symbolField = () =>
+    screen.getByLabelText("IBKR local symbol (unverified)") as HTMLInputElement;
+
+  it("prefills MSFT and routes SMART in USD, with the card's close as the price", async () => {
+    setup({ listings: [], target: { ...TARGET, closePrice: 412.5 } });
+    await screen.findByText("No verified EUR equivalent");
+    expect(symbolField().value).toBe("MSFT");
+    expect(
+      screen.getByText("Prefilled with the home listing: edit for a EUR listing."),
+    ).toBeTruthy();
+    expect(screen.getByText("Unverified symbol.")).toBeTruthy();
+    expect(screen.getByTestId("home-destination").textContent).toBe(
+      "Destination: SMART (home market, NasdaqGS)",
+    );
+    expect(screen.queryByLabelText("Destination")).toBeNull();
+    await waitFor(() =>
+      expect((screen.getByLabelText("Limit price (USD)") as HTMLInputElement).value).toBe("412.50"),
+    );
+    type("Quantity (shares)", "10");
+    expect(prompt()).toBe(
+      "Create buy limit order for 10 shares of MSFT at 412.5 and set destination SMART",
+    );
+    expect(screen.getByTestId("estimate").textContent).toContain("USD");
+  });
+
+  it("leaves the price empty when the dialog has no close", async () => {
+    setup({ listings: [] });
+    await screen.findByText("No verified EUR equivalent");
+    expect((screen.getByLabelText("Limit price (USD)") as HTMLInputElement).value).toBe("");
+    type("Quantity (shares)", "10");
+    type("Limit price (USD)", "400");
+    expect(prompt()).toBe(
+      "Create buy limit order for 10 shares of MSFT at 400 and set destination SMART",
+    );
+  });
+
+  it("prefills RMS for RMS.PA", async () => {
+    setup({
+      listings: [],
+      target: { ...TARGET, symbol: "RMS.PA", exchangeCode: "PAR", currency: "EUR" },
+    });
+    await screen.findByText("No verified EUR equivalent");
+    expect(symbolField().value).toBe("RMS");
+  });
+
+  it("restores the EUR behaviour once the user types another symbol, and does not prefill again", async () => {
+    setup({ listings: [] });
+    await screen.findByText("No verified EUR equivalent");
+    type("IBKR local symbol (unverified)", "MSF");
+    expect(
+      screen.queryByText("Prefilled with the home listing: edit for a EUR listing."),
+    ).toBeNull();
+    expect(screen.queryByTestId("home-destination")).toBeNull();
+    type("Quantity (shares)", "10");
+    type("Limit price (EUR)", "400");
+    expect(prompt()).toBe(
+      "Create buy limit order for 10 shares of MSF at 400 and set destination IBIS2",
+    );
+    type("IBKR local symbol (unverified)", "");
+    expect(symbolField().value).toBe("");
+  });
+
+  it("does not prefill a verified listing", async () => {
+    setup();
+    await badge("verified");
+    expect(screen.queryByLabelText("IBKR local symbol (unverified)")).toBeNull();
+    expect(screen.getByLabelText("Destination")).toBeTruthy();
   });
 });
 

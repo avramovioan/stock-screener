@@ -26,7 +26,7 @@ select ok((select status = 'complete' and finished_at is not null from scan_runs
           'a queued visitor job does not re-open a complete run');
 
 -- 3: past the 22:00 deadline the sweep kills an ordinary open job but not the visitor job
-insert into scan_runs (id, scan_date_local, settings_snapshot) values ('96000000-0000-4000-8000-0000000000a2', (now() at time zone 'Europe/Sofia')::date - 1, '{}');
+insert into scan_runs (id, scan_date_local, settings_snapshot) values ('96000000-0000-4000-8000-0000000000a2', date '2001-01-02', '{}');
 insert into scan_jobs (scan_run_id, stage, key, status, attempts, finished_at)
 select '96000000-0000-4000-8000-0000000000a2', stage, key, 'done', 1, now() from stages where ord <= 12;
 insert into scan_jobs (scan_run_id, stage, key, status, payload) values

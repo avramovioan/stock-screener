@@ -11,6 +11,7 @@ import {
   type EnableResult,
   enablePush,
   liveEndpoint,
+  renewStaleSubscription,
 } from "./push-client";
 import { detectPushSupport, type PushSupport, type SupportEnv } from "./push-support";
 import { writeStoredTopics } from "./topic-store";
@@ -37,6 +38,15 @@ const FAILURES: Record<Exclude<EnableResult, { ok: true }>["reason"], string> = 
   server_failed: "The subscription could not be saved. Try again in a moment.",
   too_many: "This account has too many devices registered. Turn one off on another device first.",
 };
+
+function testFailureText({ reason, status }: { reason?: string; status?: number }): string {
+  if (reason === "server_keys")
+    return "The server's push keys are not set up correctly. (Owner: see the go-live runbook, troubleshooting.)";
+  if (reason === "rejected" && status === 403)
+    return "This phone's subscription does not match the server key. Turn notifications off and on again.";
+  if (reason === "network") return "The push service could not be reached. Try again.";
+  return "The test could not be delivered. Turn this phone off and on again.";
+}
 
 /**
  * State of the bell's sheet: whether THIS browser is registered and for which topics. Every
@@ -79,6 +89,8 @@ export function useDeviceNotifications(deps: DeviceDeps) {
     const run = ++generation.current;
     setBusy(true);
     try {
+      // a rotated VAPID key is healed before the sheet reads the device's state
+      await renewStaleSubscription(browser, api, vapidPublicKey).catch(() => false);
       const live = await liveEndpoint(browser);
       const status = live === null ? null : await api.status(live);
       if (run !== generation.current) return;
@@ -99,7 +111,7 @@ export function useDeviceNotifications(deps: DeviceDeps) {
     } finally {
       if (run === generation.current) setBusy(false);
     }
-  }, [api, browser]);
+  }, [api, browser, vapidPublicKey]);
 
   /** Called from the bell's click. Registers the device when nothing was decided yet. */
   const open = useCallback(() => {
@@ -147,14 +159,11 @@ export function useDeviceNotifications(deps: DeviceDeps) {
     setNotice(null);
     setBusy(true);
     try {
-      const { sent } = await api.sendTest(endpoint);
+      const outcome = await api.sendTest(endpoint);
       setNotice(
-        sent > 0
+        outcome.sent > 0
           ? { kind: "status", text: "Test notification sent." }
-          : {
-              kind: "error",
-              text: "The test could not be delivered. Turn this phone off and on again.",
-            },
+          : { kind: "error", text: testFailureText(outcome) },
       );
     } catch (error) {
       const reason = error instanceof NotificationsApiError ? error.reason : "failed";

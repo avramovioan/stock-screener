@@ -10,6 +10,7 @@ and prepare (never place) an order through a guided hand-off to IBKR's iBot.
 Any visitor can press "Scan with AI" on a listed company to start a fresh research report. Results are shared with everyone, and each company can be scanned again after a 72-hour cooldown. The `/how-it-works` page explains the method in plain words.
 
 To make the app operational from zero, follow the **Go-live checklist** at the top of `docs/operator-guide.md`.
+To test a deployed function (health, push, Telegram, digest resend), run the PowerShell scripts in `scripts/` (see `scripts/README.md`).
 
 ## Architecture in one page
 
@@ -96,6 +97,8 @@ docs/operator-guide.md                 the runbook
 
 - Operator guide (go-live checklist, local development, runbooks, costs, decisions): `docs/operator-guide.md`
 - Cloudflare go-live checklist (workers.dev site, GitHub settings, sign-ups off, invite list, push): `docs/cloudflare-go-live.md`
+- Optional Telegram group for new companies (bot, chat id, secrets, test call): operator guide 4.8 and part Hb of the go-live checklist
+- Test and check scripts (PowerShell, one per operator function: health, push test, Telegram test, digest resend, scan status ...): `scripts/README.md`
 - Specification: `docs/superpowers/specs/2026-10-15-stock-screener-design.md`
 - Plans: `docs/superpowers/plans/` (P0 foundations, P1 engine and pipeline, P2 AI research, P3 notifications, P4 public UI, P5a auth,
   P5b broker and portfolio, P6 IBKR hand-off, P7 hardening and release)

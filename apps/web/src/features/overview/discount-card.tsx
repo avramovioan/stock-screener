@@ -39,6 +39,9 @@ export function tradeTarget(row: DiscountRow): TradeTarget {
     rank: row.rank,
     exchangeName: row.exchange_name,
     currency: row.currency,
+    exchangeCode: row.exchange_code,
+    listingCountry: row.listing_country,
+    closePrice: row.close,
   };
 }
 

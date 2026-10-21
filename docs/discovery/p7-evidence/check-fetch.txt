@@ -1,8 +1,8 @@
 $ bun run check:fetch
 exit code: 0
-duration: 0.9 s
-finished: 2026-10-16T13:49:21.768Z
+duration: 1.1 s
+finished: 2026-10-17T08:50:57.417Z
 --- last 120 lines ---
-check:fetch: OK (150 files scanned)
+check:fetch: OK (152 files scanned)
 $ bun run tools/check-fetch-callsites.ts
 

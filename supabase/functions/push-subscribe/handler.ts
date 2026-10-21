@@ -1,5 +1,6 @@
 import { base64UrlDecode } from "@adapters/encoding.ts";
 import { corsHeaders, json, readJson } from "@adapters/http.ts";
+import { logError, logLine } from "@adapters/log.ts";
 import { isAllowedPushEndpoint, type PushResult, type PushTarget } from "@adapters/push.ts";
 
 export interface Topics {
@@ -169,16 +170,36 @@ export async function handlePushSubscribe(
         tag: "test",
       });
       const { target } = claim;
-      const result = await deps.sendTestPush(
-        { endpoint: target.endpoint, p256dh: target.p256dh, auth: target.auth },
-        payload,
-      );
+      let result: PushResult;
+      try {
+        result = await deps.sendTestPush(
+          { endpoint: target.endpoint, p256dh: target.p256dh, auth: target.auth },
+          payload,
+        );
+      } catch (error) {
+        // sending only throws for a VAPID configuration problem (or a programming error): never silent
+        logError("push-subscribe test: server keys", error);
+        logLine("push_test_failed", { reason: "server_keys" });
+        await deps.store.mark(target.id, "failure");
+        return reply({ ok: true, sent: 0, failed: 1, reason: "server_keys" });
+      }
       if (result.ok) {
         await deps.store.mark(target.id, "success");
         return reply({ ok: true, sent: 1, failed: 0 });
       }
       await deps.store.mark(target.id, result.kind === "gone" ? "gone" : "failure");
-      return reply({ ok: true, sent: 0, failed: 1 });
+      if (result.kind === "network") {
+        logLine("push_test_failed", { reason: "network" });
+        return reply({ ok: true, sent: 0, failed: 1, reason: "network" });
+      }
+      logLine("push_test_failed", { reason: "rejected", status: result.status ?? null });
+      return reply({
+        ok: true,
+        sent: 0,
+        failed: 1,
+        reason: "rejected",
+        ...(result.status === undefined ? {} : { status: result.status }),
+      });
     }
     default:
       return reply({ error: "unknown_action" }, 400);

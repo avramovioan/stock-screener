@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { renderHeaders } from "./lib/headers.ts";
+import { webBuildSupabaseUrl } from "./lib/web-build-env.ts";
 
 const source = fileURLToPath(new URL("../apps/web/public/_headers", import.meta.url));
 const target = fileURLToPath(new URL("../apps/web/dist/_headers", import.meta.url));
@@ -10,7 +11,7 @@ if (!existsSync(target)) {
 }
 const { text, origin, placeholder } = renderHeaders(
   readFileSync(source, "utf8"),
-  process.env.VITE_SUPABASE_URL,
+  webBuildSupabaseUrl(),
 );
 writeFileSync(target, text);
 console.log(

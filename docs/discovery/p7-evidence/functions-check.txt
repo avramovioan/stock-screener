@@ -1,7 +1,7 @@
 $ bun run functions:check
 exit code: 0
-duration: 3.8 s
-finished: 2026-10-16T13:48:44.629Z
+duration: 7.4 s
+finished: 2026-10-17T08:50:15.858Z
 --- last 120 lines ---
 $ deno check --config supabase/functions/deno.json "supabase/functions/**/*.ts" "!supabase/functions/_shared/core/**/*.test.ts"
 
