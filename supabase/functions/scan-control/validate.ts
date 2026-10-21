@@ -12,6 +12,7 @@ export const ACTIONS = [
   "set_setting",
   "override",
   "research_now",
+  "telegram_test",
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 
@@ -51,6 +52,7 @@ export type Parsed =
       payload: Record<string, unknown>;
     }
   | { ok: true; action: "research_now"; securityId: string; force: boolean }
+  | { ok: true; action: "telegram_test" }
   | { ok: false; error: string };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -142,6 +144,8 @@ export function parseRequest(body: unknown): Parsed {
         reason,
       };
     }
+    case "telegram_test":
+      return { ok: true, action: "telegram_test" };
     case "research_now": {
       const securityId = body["security_id"];
       if (typeof securityId !== "string" || !UUID.test(securityId))

@@ -1,6 +1,7 @@
 import { createServiceDb } from "@adapters/db.ts";
 import { corsHeaders, json, requireCronSecret } from "@adapters/http.ts";
 import { logError } from "@adapters/log.ts";
+import { loadTelegramEnv, sendTelegramMessage } from "@adapters/telegram.ts";
 import { type Actor, ControlError, execute } from "./actions.ts";
 import { parseRequest } from "./validate.ts";
 
@@ -42,10 +43,13 @@ Deno.serve(async (req) => {
   const parsed = parseRequest(await req.json().catch(() => null));
   if (!parsed.ok) return json({ error: parsed.error }, { status: 400, headers: cors });
   try {
+    const telegramEnv = loadTelegramEnv();
     const result = await execute(parsed, {
       db,
       actor,
       allowFixtures: Deno.env.get("ALLOW_FIXTURE_PROVIDERS") === "1",
+      telegram:
+        telegramEnv === null ? null : { send: (text) => sendTelegramMessage(telegramEnv, text) },
     });
     return json({ ok: true, ...result }, { headers: cors });
   } catch (e) {

@@ -314,6 +314,8 @@ bundle scan rejects it in the browser build).
 | `FLEX_ENC_KEY_V1`, `FLEX_ENC_KEY_CURRENT` | AES key (base64, 32 bytes) for stored Flex tokens and the version number (a plain integer) used for new tokens (section 5). |
 | `FLEX_USER_AGENT` | Mandatory User-Agent for IBKR Flex requests, for example `PersonalStockScreener/1.0`. |
 | `JWT_ISSUER` | Local only: the issuer of local user tokens (section 0.3). |
+| `TELEGRAM_BOT_TOKEN` | Optional. The bot token from @BotFather; with `TELEGRAM_CHAT_ID` it switches on the Telegram group message of each new public digest (sent by `notify-dispatch`). Either one unset = off. Never logged. |
+| `TELEGRAM_CHAT_ID` | Optional. The id of the group the bot posts to (a negative number such as `-1001234567890`). |
 
 ### 2.5 Vault secrets and the cron jobs
 

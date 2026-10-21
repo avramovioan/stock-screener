@@ -17,6 +17,8 @@ export const SERVER_SECRET_NAMES = [
   "LLM_ALT_API_KEY",
   "CLOUDFLARE_API_TOKEN",
   "KEEPALIVE_PASSWORD",
+  "TELEGRAM_BOT_TOKEN",
+  "TELEGRAM_CHAT_ID",
 ] as const;
 
 /** Names the platform injects or that are public by design: never reported as secrets. */
