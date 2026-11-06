@@ -5,8 +5,12 @@ test("home page renders the shell and the primary navigation", async ({ page }) 
   await page.goto("/");
   await expect(page).toHaveTitle(/Stock Screener/);
   const nav = page.getByRole("navigation", { name: "Primary" });
-  for (const label of ["Overview", "Quotes", "Portfolio", "Analytics"]) {
+  for (const label of ["Overview", "Quotes"]) {
     await expect(nav.getByRole("link", { name: label })).toBeVisible();
+  }
+  // Signed out: the guarded sections are not offered
+  for (const label of ["Portfolio", "Analytics", "Regulated?"]) {
+    await expect(nav.getByRole("link", { name: label })).toHaveCount(0);
   }
   await expect(page.getByRole("heading", { level: 1, name: "Today's discounts" })).toBeVisible();
 });

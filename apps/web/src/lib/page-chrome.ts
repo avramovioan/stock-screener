@@ -5,6 +5,7 @@ const SUFFIX = "Stock Screener";
 const TITLES: Record<string, string> = {
   "/": "Overview",
   "/quotes": "Quotes",
+  "/regulated": "Regulated?",
   "/about": "About",
   "/portfolio": "Portfolio",
   "/analytics": "Analytics",

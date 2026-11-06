@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@core/": "../_shared/core/",
+    "@adapters/": "../_shared/adapters/",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.117.3"
+  },
+  "nodeModulesDir": "none"
+}

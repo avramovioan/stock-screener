@@ -15,6 +15,7 @@ describe("requireAuth", () => {
   it.each([
     ["/portfolio", "/portfolio"],
     ["/analytics", "/analytics"],
+    ["/regulated", "/regulated"],
     ["/profile/security", "/profile/security"],
     ["/profile", "/profile"],
     ["/portfolio?tab=positions", "/portfolio?tab=positions"],

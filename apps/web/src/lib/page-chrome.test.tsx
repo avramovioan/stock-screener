@@ -8,6 +8,7 @@ describe("titleForPath", () => {
   it.each([
     ["/", "Overview · Stock Screener"],
     ["/quotes", "Quotes · Stock Screener"],
+    ["/regulated", "Regulated? · Stock Screener"],
     ["/about", "About · Stock Screener"],
     ["/portfolio", "Portfolio · Stock Screener"],
     ["/analytics", "Analytics · Stock Screener"],
