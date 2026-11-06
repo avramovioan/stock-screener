@@ -45,6 +45,7 @@
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
     "supabase:serve": "supabase functions serve --no-verify-jwt",
+    "gen:eu-exchanges": "bun run tools/gen-eu-exchanges.ts",
     "gen:icons": "bun run tools/gen-icons.ts",
     "gen:vapid": "bun run tools/gen-vapid.ts",
     "spike:push": "bun run tools/spike-push.ts",

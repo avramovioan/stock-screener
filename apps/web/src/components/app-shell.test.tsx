@@ -42,6 +42,7 @@ const PUBLIC_ROUTES: Array<[string, string]> = [
 const PROTECTED_ROUTES: Array<[string, string]> = [
   ["/portfolio", "Portfolio"],
   ["/analytics", "Analytics"],
+  ["/regulated", "Regulated?"],
   ["/profile", "Security"],
   ["/profile/security", "Security"],
   ["/profile/broker", "Broker"],
@@ -66,6 +67,22 @@ describe("app shell", () => {
   );
 
   it("renders primary and mobile navigation with the current page marked", async () => {
+    await renderApp("/quotes", signedIn());
+    const primary = await screen.findByRole("navigation", { name: "Primary" });
+    const mobile = screen.getByRole("navigation", { name: "Mobile" });
+    for (const nav of [primary, mobile]) {
+      const labels = within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent?.trim());
+      expect(labels).toEqual(["Overview", "Quotes", "Regulated?", "Portfolio", "Analytics"]);
+      expect(within(nav).getByRole("link", { name: "Quotes" }).getAttribute("aria-current")).toBe(
+        "page",
+      );
+    }
+    expect(mobile.firstElementChild?.className).toContain("grid-cols-5");
+  });
+
+  it("hides Portfolio, Analytics and Regulated? when signed out and sizes the mobile grid to two", async () => {
     await renderApp("/quotes", signedOut);
     const primary = await screen.findByRole("navigation", { name: "Primary" });
     const mobile = screen.getByRole("navigation", { name: "Mobile" });
@@ -73,11 +90,17 @@ describe("app shell", () => {
       const labels = within(nav)
         .getAllByRole("link")
         .map((link) => link.textContent?.trim());
-      expect(labels).toEqual(["Overview", "Quotes", "Portfolio", "Analytics"]);
-      expect(within(nav).getByRole("link", { name: "Quotes" }).getAttribute("aria-current")).toBe(
-        "page",
-      );
+      expect(labels).toEqual(["Overview", "Quotes"]);
     }
+    expect(mobile.firstElementChild?.className).toContain("grid-cols-2");
+  });
+
+  it("hides Portfolio and Analytics while the session is loading", async () => {
+    await renderApp("/quotes", { status: "loading" });
+    const primary = await screen.findByRole("navigation", { name: "Primary" });
+    expect(within(primary).queryByRole("link", { name: "Portfolio" })).toBeNull();
+    expect(within(primary).queryByRole("link", { name: "Analytics" })).toBeNull();
+    expect(within(primary).queryByRole("link", { name: "Regulated?" })).toBeNull();
   });
 
   it("exposes landmarks, a skip link, the profile link and the theme toggle when signed in", async () => {

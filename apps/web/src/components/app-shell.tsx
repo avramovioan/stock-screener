@@ -1,25 +1,45 @@
 import { Link, Outlet, useRouter } from "@tanstack/react-router";
-import { Briefcase, ChartColumn, ChartLine, LayoutDashboard, type LucideIcon } from "lucide-react";
+import {
+  Briefcase,
+  ChartColumn,
+  ChartLine,
+  LayoutDashboard,
+  type LucideIcon,
+  ShieldCheck,
+} from "lucide-react";
 import { useEffect } from "react";
 import { AuthRouteSync } from "@/components/auth-route-sync";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { useAuth } from "@/features/auth/auth-provider";
 import { NotificationsBell } from "@/features/notifications/notifications-bell";
 import { AttributionNotice } from "@/features/quotes/attribution";
 import { registerPageChrome } from "@/lib/page-chrome";
 
 interface NavItem {
-  to: "/" | "/quotes" | "/portfolio" | "/analytics";
+  to: "/" | "/quotes" | "/regulated" | "/portfolio" | "/analytics";
   label: string;
   icon: LucideIcon;
+  /** Only shown to a signed-in user (the route itself is guarded too). */
+  authOnly?: boolean;
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
   { to: "/", label: "Overview", icon: LayoutDashboard },
   { to: "/quotes", label: "Quotes", icon: ChartLine },
-  { to: "/portfolio", label: "Portfolio", icon: Briefcase },
-  { to: "/analytics", label: "Analytics", icon: ChartColumn },
+  { to: "/regulated", label: "Regulated?", icon: ShieldCheck, authOnly: true },
+  { to: "/portfolio", label: "Portfolio", icon: Briefcase, authOnly: true },
+  { to: "/analytics", label: "Analytics", icon: ChartColumn, authOnly: true },
 ];
+
+// Static class names so Tailwind sees them; keyed by the number of visible items
+const MOBILE_COLS: Record<number, string> = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+  4: "grid-cols-4",
+  5: "grid-cols-5",
+};
 
 const focusRing =
   "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring";
@@ -28,11 +48,13 @@ const focusRing =
 const topLink = `inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[status=active]:bg-accent data-[status=active]:font-semibold data-[status=active]:text-accent-foreground ${focusRing}`;
 
 // 56px tall mobile targets (above the 44px minimum); active tab also gets a top indicator bar
-const bottomLink = `relative flex min-h-14 flex-col items-center justify-center gap-1 px-2 text-xs font-medium text-muted-foreground transition-colors data-[status=active]:font-semibold data-[status=active]:text-primary data-[status=active]:before:absolute data-[status=active]:before:inset-x-6 data-[status=active]:before:top-0 data-[status=active]:before:h-0.5 data-[status=active]:before:rounded-full data-[status=active]:before:bg-primary ${focusRing}`;
+const bottomLink = `relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 px-2 text-xs font-medium text-muted-foreground transition-colors data-[status=active]:font-semibold data-[status=active]:text-primary data-[status=active]:before:absolute data-[status=active]:before:inset-x-6 data-[status=active]:before:top-0 data-[status=active]:before:h-0.5 data-[status=active]:before:rounded-full data-[status=active]:before:bg-primary ${focusRing}`;
 
 export function AppShell() {
   const router = useRouter();
   useEffect(() => registerPageChrome(router), [router]);
+  const { status } = useAuth();
+  const items = NAV_ITEMS.filter((item) => !item.authOnly || status === "signed-in");
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <AuthRouteSync />
@@ -49,7 +71,7 @@ export function AppShell() {
             Stock Screener
           </Link>
           <nav aria-label="Primary" className="hidden flex-1 items-center gap-1 md:flex">
-            {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            {items.map(({ to, label, icon: Icon }) => (
               <Link
                 key={to}
                 to={to}
@@ -100,8 +122,8 @@ export function AppShell() {
         aria-label="Mobile"
         className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
       >
-        <div className="grid grid-cols-4">
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+        <div className={`grid ${MOBILE_COLS[items.length] ?? "grid-cols-5"}`}>
+          {items.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
@@ -109,7 +131,7 @@ export function AppShell() {
               activeOptions={{ exact: to === "/", includeSearch: to !== "/" }}
             >
               <Icon className="size-5" aria-hidden="true" />
-              {label}
+              <span className="max-w-full truncate">{label}</span>
             </Link>
           ))}
         </div>

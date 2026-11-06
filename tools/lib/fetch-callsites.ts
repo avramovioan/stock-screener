@@ -98,6 +98,16 @@ export const FETCH_POLICY: Record<string, FetchPolicy> = {
       "api.telegram.org (API_HOST is a constant); the bot token is part of the path, so nothing here logs a URL or a network error text",
     requires: ["https://api.telegram.org"],
   },
+  "supabase/functions/esma-regulated/handler.ts": {
+    category: "fixed-host",
+    reason:
+      "registers.esma.europa.eu: ESMA_SEARCH_URL and ESMA_SOLR_BASE (core/esma.ts) are constants; only a validated ISIN and MICs/LEIs from the generated exchange list enter the body or the [A-Z0-9]-whitelisted Solr q",
+    requires: ["ESMA_SEARCH_URL", "firdsSolrUrl"],
+  },
+  "supabase/functions/esma-regulated/index.ts": {
+    category: "fixed-host",
+    reason: "passes the global fetch to handler.ts, which only calls registers.esma.europa.eu",
+  },
   "supabase/functions/_shared/adapters/flex.ts": {
     category: "fixed-host",
     reason:

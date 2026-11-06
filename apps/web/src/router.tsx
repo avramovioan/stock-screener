@@ -26,6 +26,8 @@ import { ProfileNotificationsPage } from "@/features/profile/notifications-page"
 import { ProfileLayout } from "@/features/profile/profile-layout";
 import { SecurityPage } from "@/features/profile/security/security-page";
 import { QuotesPage } from "@/features/quotes/quotes-page";
+import { RegulatedPage } from "@/features/regulated/regulated-page";
+import { validateRegulatedSearch } from "@/features/regulated/search-params";
 import { ReportPage } from "@/features/research/ReportPage";
 import { validateOverviewSearch, validateQuotesSearch } from "@/features/screening/search-params";
 
@@ -67,6 +69,13 @@ const quotesRoute = createRoute({
   path: "/quotes",
   validateSearch: validateQuotesSearch,
   component: QuotesPage,
+});
+const regulatedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/regulated",
+  validateSearch: validateRegulatedSearch,
+  beforeLoad: requireAuth,
+  component: guarded(RegulatedPage),
 });
 const portfolioRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -141,6 +150,7 @@ const signedOutRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   quotesRoute,
+  regulatedRoute,
   portfolioRoute,
   analyticsRoute,
   researchRoute,

@@ -68,3 +68,17 @@ describe("CountryFlag", () => {
     }
   });
 });
+
+describe("CountryFlag by code", () => {
+  const EUROPE =
+    "AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE IS LI NO CH GB".split(
+      " ",
+    );
+  it("has a real flag for every EU27 + EFTA + GB code", () => {
+    for (const code of EUROPE) {
+      const { container, unmount } = render(<CountryFlag code={code} />);
+      expect(container.querySelector("svg")?.getAttribute("data-flag"), code).toBe(code);
+      unmount();
+    }
+  });
+});

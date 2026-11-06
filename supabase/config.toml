@@ -454,6 +454,9 @@ verify_jwt = false
 [functions.quotes]
 verify_jwt = false
 
+[functions.esma-regulated]
+verify_jwt = false
+
 [functions.research-request]
 verify_jwt = false
 
